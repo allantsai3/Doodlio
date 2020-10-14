@@ -12,7 +12,9 @@ If Auto DevOps is not already enabled for this project, you can [turn it on](htt
 
 
 # Run with 
-``` yarn run start
+
+```yarn run start
 
 # Test with
-``` yarn run test
+
+```yarn run test
