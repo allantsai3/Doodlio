@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- socketio script-->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <title>Game</title>
+  </head>
+  <body>
+    <h1>Game window:</h1>
+    <canvas id="canvas" width="500" height="500" style="border: 1px solid black;">
+        Your browser does not support the HTML 5 Canvas. 
+    </canvas>
+    <form action="">
+        <label for="m">Textbox</label>
+        <input type="text" id="m" value=""><br>
+        <button>Send</button>
+    </form>
+    <script>
+        $(function () {
+			var socket = io();
+			$('form').submit(function(e) {
+				console.log('submitting form');
+				// Prevent page from reloading
+				e.preventDefault();
+				socket.emit('chat message', $('#m').val());
+				$('#m').val('');
+				return false;
+			});
+		});
+    </script>
+  </body>
+</html>
