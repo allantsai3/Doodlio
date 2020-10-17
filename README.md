@@ -12,13 +12,17 @@ If Auto DevOps is not already enabled for this project, you can [turn it on](htt
 
 ## Usage
 
+# First time setup
+```
+yarn install
+```
 
+# Run the node server
 ``` 
 yarn run start
 ```
 
 ## Test with
-
 ``` 
 yarn run test
 ```
