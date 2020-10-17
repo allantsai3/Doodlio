@@ -3,8 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon server.js",
-    "test": "mocha"
+    "start": "yarn run eslint && nodemon server.js",
+    "clean": "rm -rf node_modules",
+    "test": "mocha",
+    "eslint": "./node_modules/.bin/eslint ./"
   },
   "dependencies": {
     "cookie-parser": "~1.4.3",
@@ -16,6 +18,10 @@
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
+    "eslint": "^7.11.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-socket-io": "^0.0.2",
     "mocha": "^5.1.1",
     "supertest": "^3.0.0"
   }
