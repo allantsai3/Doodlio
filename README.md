@@ -13,6 +13,10 @@ If Auto DevOps is not already enabled for this project, you can [turn it on](htt
 ## Usage
 
 # First time setup
+Make sure yarn is installed on your system through the following:
+https://classic.yarnpkg.com/en/docs/install/#debian-stable
+
+Once yarn is installed:
 ```
 yarn install
 ```
