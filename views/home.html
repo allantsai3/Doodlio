@@ -71,25 +71,25 @@
 			<div class="col-sm-10 main-section">
 				<div class="modal-content">
 					<div class="col-12 form-input">
-						<form action="">
+						<form action="/" method="post">
 							<div class="form-group">
 								<label for="code">Enter room code:</label>
 								<input
 									type="text"
 									class="form-control"
-									id="code"
+                  id="code"
+                  name="code"
 									aria-describedby="Room Code"
 								/>
 							</div>
 
-							<button class="btn btn-primary">Play!</button>
+							<button class="btn btn-primary" type="submit">Play!</button>
 						</form>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<script src="./js/home.js" type="text/javascript"></script>
 		<script
 			src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
 			integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"

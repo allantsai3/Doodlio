@@ -3,6 +3,7 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 const logger = require('morgan');
 const debug = require('debug')('demo:server');
 const http = require('http');
@@ -12,6 +13,8 @@ const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -19,14 +22,42 @@ app.engine('html', require('ejs').renderFile);
 
 app.set('view engine', 'html');
 
+// Move to database
+const rooms = {};
+
 // Define paths
 app.get('/', (req, res) => {
 	res.render('home.html');
 });
 
-app.get('/:page', (req, res) => {
-	console.log(`fetching from: ${req.params.page}.html`);
-	res.render(`${req.params.page}.html`);
+// Post request instead of using sockets since we don't need constant updates
+app.post('/', (req, res) => {
+	const {
+		body: {
+			code = '',
+		},
+	} = req;
+
+	// Room are 4 digits long
+	if (code.length === 4) {
+		console.log(`valid room code entered: ${code}`);
+		if (code in rooms) {
+			console.log('found an existing room');
+			res.render('gamescreen.html');
+		} else {
+			console.log('creating new room...');
+			rooms[code] = {
+				started: false,
+				playerCount: 0,
+			};
+			// Set cookie (expires after 10 minutes)
+			res.cookie('roomCode', code, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
+			res.render('gamescreen.html');
+		}
+	} else {
+		console.log('Invalid room code');
+		res.render('home.html');
+	}
 });
 
 // catch 404 and forward to error handler
@@ -116,24 +147,51 @@ server.on('listening', onListening);
 // Create socket.io instance
 const io = socketio(server);
 
+function getCookie(cookies, name) {
+	let roomCode;
+	cookies.split('; ').some((cookie) => {
+		const splitCookie = cookie.split('=');
+		const [cookieName, val] = splitCookie;
+		if (cookieName === name) {
+			roomCode = val;
+			return true;
+		}
+		return false;
+	});
+	return roomCode;
+}
+
 // Listen on connection event for incoming sockets
 io.on('connection', (socket) => {
 	console.log('a user connected');
+	const {
+		id,
+		handshake: {
+			headers: {
+				cookie = '',
+			} = {},
+		} = {},
+	} = socket;
+
+	// Parse cookie for room code
+	const code = getCookie(cookie, 'roomCode');
+
+	console.log(`socket id: ${id}, joining room with code: ${code}`);
+	socket.join(code);
+	rooms[code].playerCount += 1;
+	console.log(`current room id: ${code} count: ${rooms[code].playerCount}`);
+
 	socket.on('chat message', (msg) => {
 		console.log(`message: ${msg}`);
 	});
 
-	socket.on('draw position', (pos) => {
-		console.log(`draw position: x: ${pos.xpos} y: ${pos.ypos}`);
-	});
-
-	socket.on('room code', (code) => {
-		if (code.length === 4) {
-			console.log(`valid room code entered: ${code}`);
-		}
+	socket.on('draw', (pos) => {
+		io.to(code).emit('draw', { x: pos.xpos, y: pos.ypos });
 	});
 
 	socket.on('disconnect', () => {
 		console.log('user disconnected');
+		rooms[code].playerCount -= 1;
+		console.log(`current room id: ${code} count: ${rooms[code].playerCount}`);
 	});
 });

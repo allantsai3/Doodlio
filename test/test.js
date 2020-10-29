@@ -1,10 +1,10 @@
 // const request = require('supertest');
-// const app = require('../app');
+// const app = require('../server');
 
-// describe('App', function() {
-//   // it('has the default page', function(done) {
-//   //   request(app)
-//   //     .get('/')
-//   //     .expect(/Welcome to Express/, done);
-//   // });
+// describe('GET /', () => {
+// 	it('responds with the home page', (done) => {
+// 		request(app)
+// 			.get('/')
+// 			.expect(200, done);
+// 	});
 // });
