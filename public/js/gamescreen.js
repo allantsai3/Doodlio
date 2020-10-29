@@ -1,21 +1,30 @@
+const penThickness = 20;
+const canvasElem = document.getElementById('canvas');
+
+// eslint-disable-next-line no-undef
+const socket = io();
+
+// Drawing functions
 function getMousePosition(canvas, event) {
 	const rect = canvas.getBoundingClientRect();
 	const x = event.clientX - rect.left;
 	const y = event.clientY - rect.top;
-	console.log(`Coordinate x: ${x}`,
-		`Coordinate y: ${y}`);
+	const ctx = canvas.getContext('2d');
+	ctx.fillRect(x, y, penThickness, penThickness);
 	// eslint-disable-next-line no-use-before-define
-	socket.emit('draw position', { xpos: x, ypos: y });
+	socket.emit('draw', { xpos: x, ypos: y });
 }
-
-const canvasElem = document.getElementById('canvas');
 
 canvasElem.addEventListener('mousedown', (e) => {
 	getMousePosition(canvasElem, e);
 });
 
-// eslint-disable-next-line no-undef
-const socket = io();
+socket.on('draw', (data) => {
+	const ctx = canvasElem.getContext('2d');
+	ctx.fillRect(data.x, data.y, penThickness, penThickness);
+});
+
+// Chat functions
 $('form').submit((e) => {
 	console.log('submitting form');
 	// Prevent page from reloading
