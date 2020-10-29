@@ -25,6 +25,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/:page', (req, res) => {
+	console.log(`fetching from: ${req.params.page}.html`);
 	res.render(`${req.params.page}.html`);
 });
 
