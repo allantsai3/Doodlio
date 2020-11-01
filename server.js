@@ -9,6 +9,12 @@ const debug = require('debug')('demo:server');
 const http = require('http');
 const socketio = require('socket.io');
 
+// Set env variable for authentication
+process.env.GOOGLE_APPLICATION_CREDENTIALS = './CMPT470Project-27d9ef5ea1a8.json';
+const DB = require('./utils/database');
+
+DB.executeSQL('getLobbies');
+
 const app = express();
 
 app.use(logger('dev'));
