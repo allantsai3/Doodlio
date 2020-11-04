@@ -1,15 +1,21 @@
 html {
-	min-height: 100%;
-	background-color: #434c5e;
+	min-height: 100vh;
 }
 
 body {
 	background-color: #434c5e;
 }
 
+.navbar {
+	top: 0;
+	position: absolute;
+	width: 100%;
+	z-index: 9999;
+}
+
 .main-section {
 	margin: 0 auto;
-	margin-top: 150px;
+	margin-top: 50%;
 	padding: 0;
 }
 
@@ -17,14 +23,14 @@ body {
 	background-color: #d8dee9;
 	opacity: 80%;
 	border-radius: 10px;
-	padding: 3em 4em 2em;
+	padding: 4em;
 }
 
-.form-input button {
+/* .form-input button {
 	width: 40%;
 	margin: 5px 0 25px;
-}
+} */
 
-.form-group {
+/* .form-group {
 	margin-bottom: 40px;
-}
+} */
