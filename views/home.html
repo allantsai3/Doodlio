@@ -1,104 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<!-- Required meta tags -->
-		<meta charset="utf-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1, shrink-to-fit=no"
-		/>
 
-		<!-- Bootstrap CSS -->
-		<link
-			rel="stylesheet"
-			href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
-			integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
-			crossorigin="anonymous"
-		/>
-		<link rel="stylesheet" href="stylesheets/style.css" />
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8" />
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-		<!-- socketio script-->
-		<script src="/socket.io/socket.io.js"></script>
-		<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+		integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+		crossorigin="anonymous" />
+	<link rel="stylesheet" href="stylesheets/style.css" />
 
-		<title>Doodl | Multiplayer Drawing and Guessing Game</title>
-	</head>
+	<!-- socketio script-->
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 
-	<body>
-		<nav class="navbar navbar-expand-md navbar-dark bg-dark">
-			<a class="navbar-brand" href="#">Doodl.io</a>
-			<button
-				class="navbar-toggler"
-				type="button"
-				data-toggle="collapse"
-				data-target="#navbarNav"
-				aria-controls="navbarNav"
-				aria-expanded="false"
-				aria-label="Toggle navigation"
-			>
-				<span class="navbar-toggler-icon"></span>
-			</button>
-			<div
-				class="collapse navbar-collapse justify-content-center"
-				id="navbarNav"
-			>
-				<ul class="navbar-nav ml-auto">
-					<li class="nav-item active">
-						<a class="nav-link" href="#"
-							>Home <span class="sr-only">(current)</span></a
-						>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="#">Gallery</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="#">Leaderboard</a>
-					</li>
-					<li class="nav-item">
-						<a
-							class="nav-link disabled"
-							href="#"
-							tabindex="-1"
-							aria-disabled="true"
-							>Feature Request</a
-						>
-					</li>
-				</ul>
-			</div>
-		</nav>
+	<title>Doodl | Multiplayer Drawing and Guessing Game</title>
+	<link rel="shortcut icon" href="img/doodl.jpg" />
+</head>
 
-		<div class="modal-dialog text-center">
-			<div class="col-sm-10 main-section">
-				<div class="modal-content">
-					<div class="col-12 form-input">
+<body>
+	<!-- Collapsable Navbar -->
+	<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+		<a class="navbar-brand" href="/">
+			<img src="img/doodl.jpg" width="30" height="30"
+				class="d-inline-block align-top" alt="Doodl.io Logo">
+			Doodl.io</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse"
+			data-target="#navbarNav" aria-controls="navbarNav"
+			aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse justify-content-center"
+			id="navbarNav">
+			<ul class="nav navbar-nav ml-auto" id="pills-tab" role="tablist">
+				<li class="nav-item">
+					<a class="nav-link active" id="pills-home-tab"
+						data-toggle="pill" href="#pills-home" role="tab"
+						aria-controls="pills-home" aria-selected="true">Home
+						<span class="sr-only">(current)</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" id="pills-gallery-tab"
+						data-toggle="pill" href="#pills-gallery" role="tab"
+						aria-controls="pills-gallery"
+						aria-selected="false">Gallery</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" id="pills-leaderboard-tab"
+						data-toggle="pill" href="#pills-leaderboard" role="tab"
+						aria-controls="pills-leaderboard"
+						aria-selected="false">Leaderboard</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link disabled" href="#" tabindex="-1"
+						aria-disabled="true">Feature Request</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" id="pills-login-tab" data-toggle="pill"
+						href="#pills-login" role="tab"
+						aria-controls="pills-login"
+						aria-selected="false">Login</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+
+	<div class="modal-dialog modal-dialog-centered text-center">
+		<div class="col-md-12 main-section">
+			<div class="modal-content">
+				<div class="tab-content" id="pills-tabContent">
+					<div class="tab-pane fade show active" id="pills-home"
+						role="tabpanel" aria-labelledby="pills-home-tab">
 						<form action="/" method="post">
 							<div class="form-group">
-								<label for="code">Enter room code:</label>
-								<input
-									type="text"
-									class="form-control"
-                  id="code"
-                  name="code"
-									aria-describedby="Room Code"
-								/>
+								<label for="code"> Enter room code:</label>
+								<input type="text" class="form-control"
+									id="code" name="code"
+									aria-describedby="Room Code" />
 							</div>
-
-							<button class="btn btn-primary" type="submit">Play!</button>
+							<button class="btn btn-primary" type="submit">
+								Play!
+							</button>
 						</form>
+					</div>
+					<div class="tab-pane fade" id="pills-gallery"
+						role="tabpanel" aria-labelledby="pills-gallery-tab">
+						Gallery coming soon
+					</div>
+					<div class="tab-pane fade" id="pills-leaderboard"
+						role="tabpanel" aria-labelledby="pills-leaderboard-tab">
+						Leaderboard coming soon
+					</div>
+					<div class="tab-pane fade" id="pills-login" role="tabpanel"
+						aria-labelledby="pills-login-tab">
+						<a class="btn btn-outline-dark" href="#" role="button">
+							<img width="20px"
+								style="margin-bottom:3px; margin-right:5px"
+								alt="Google sign-in"
+								src="/img/googleLogo.png" />
+							Login with Google
+						</a>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<script
-			src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+		<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
 			integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-			crossorigin="anonymous"
-		></script>
+			crossorigin="anonymous"></script>
 		<script
 			src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
 			integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
-			crossorigin="anonymous"
-		></script>
-	</body>
+			crossorigin="anonymous"></script>
+		<script src="js/home.js"></script>
+</body>
+
 </html>
