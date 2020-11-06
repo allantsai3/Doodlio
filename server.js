@@ -185,8 +185,12 @@ io.on('connection', (socket) => {
 		console.log(`message: ${msg}`);
 	});
 
-	socket.on('draw', (pos) => {
-		io.to(code).emit('draw', { x: pos.xpos, y: pos.ypos });
+	socket.on('draw', (data) => {
+		socket.broadcast.emit('draw', data);
+	});
+
+	socket.on('finished', () => {
+		socket.broadcast.emit('finished');
 	});
 
 	socket.on('disconnect', () => {
