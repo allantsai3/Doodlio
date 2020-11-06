@@ -9,8 +9,17 @@ const debug = require('debug')('demo:server');
 const http = require('http');
 const socketio = require('socket.io');
 const helpers = require('./server/helpers');
+const db = require('./server/database');
 
 const app = express();
+
+const con = db.connectDB();
+con.query('SELECT * FROM Gallery', (err, result) => {
+	if (err) {
+		console.log('error fetching from database: database servers or proxy may not be on!');
+	}
+	console.log(result);
+});
 
 app.use(logger('dev'));
 app.use(express.json());

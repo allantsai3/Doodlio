@@ -1,4 +1,4 @@
-FROM node:8.11-alpine
+FROM node:13.7.0
 
 WORKDIR /usr/src/app
 
@@ -10,6 +10,6 @@ RUN yarn install
 
 COPY . /usr/src/app
 
-ENV PORT 5000
+ENV PORT 3000
 EXPOSE $PORT
-CMD [ "yarn", "start" ]
+CMD [ "node", "server.js" ]
