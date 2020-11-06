@@ -6,9 +6,17 @@ const penColor = 'black'; // default black, changes when player clicks on anothe
 const rect = canvas.getBoundingClientRect();
 
 let drawing = false; // default false, changes when player is drawing?
+let canDraw = false;
+// Temporary feature for development
+let forceDraw = false;
 
 // eslint-disable-next-line no-undef
 const socket = io();
+
+$('#forceDrawing').click(() => {
+	forceDraw = !forceDraw;
+	console.log(`canDraw: ${forceDraw}`);
+});
 
 // Drawing functions
 function startPosition() { // user is currently drawing
@@ -24,28 +32,29 @@ function finishedPosition() { // user is finished drawing
 function draw(event) {
 	if (drawing === false) return; // if player is not holding down the mouse
 
-	ctx.lineWidth = penThickness;
-	ctx.lineCap = penCap;
-	ctx.strokeStyle = penColor;
+	if (canDraw || forceDraw) {
+		ctx.lineWidth = penThickness;
+		ctx.lineCap = penCap;
+		ctx.strokeStyle = penColor;
 
-	const x = event.clientX - rect.left;
-	const y = event.clientY - rect.top;
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
 
-	const data = {
-		penThickness,
-		penCap,
-		penColor,
-		x,
-		y,
-	};
+		const data = {
+			penThickness,
+			penCap,
+			penColor,
+			x,
+			y,
+		};
 
-	console.log(`Sending: ${data}`);
-	socket.emit('draw', data);
+		socket.emit('draw', data);
 
-	ctx.lineTo(x, y);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.moveTo(x, y);
+		ctx.lineTo(x, y);
+		ctx.stroke();
+		ctx.beginPath();
+		ctx.moveTo(x, y);
+	}
 }
 
 canvas.addEventListener('mousedown', startPosition); // on mouse down, drawing = true
@@ -65,6 +74,11 @@ socket.on('draw', (data) => {
 	ctx.stroke();
 	ctx.beginPath();
 	ctx.moveTo(data.x, data.y);
+});
+
+socket.on('gamestate', (data) => {
+	canDraw = (socket.id === data.currentDrawingPlayer);
+	$('#currentDrawingPlayer').text(canDraw);
 });
 
 // Chat functions

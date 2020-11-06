@@ -8,6 +8,7 @@ const logger = require('morgan');
 const debug = require('debug')('demo:server');
 const http = require('http');
 const socketio = require('socket.io');
+const helpers = require('./server/helpers');
 
 const app = express();
 
@@ -22,8 +23,9 @@ app.engine('html', require('ejs').renderFile);
 
 app.set('view engine', 'html');
 
-// Move to database
+// Dynamic content: store on server
 const rooms = {};
+const intervalHandles = {};
 
 // Define paths
 app.get('/', (req, res) => {
@@ -43,13 +45,11 @@ app.post('/', (req, res) => {
 		console.log(`valid room code entered: ${code}`);
 		if (code in rooms) {
 			console.log('found an existing room');
+			res.cookie('roomCode', code, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
 			res.render('gamescreen.html');
 		} else {
 			console.log('creating new room...');
-			rooms[code] = {
-				started: false,
-				playerCount: 0,
-			};
+			rooms[code] = helpers.createRoom();
 			// Set cookie (expires after 10 minutes)
 			res.cookie('roomCode', code, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
 			res.render('gamescreen.html');
@@ -147,20 +147,6 @@ server.on('listening', onListening);
 // Create socket.io instance
 const io = socketio(server);
 
-function getCookie(cookies, name) {
-	let roomCode;
-	cookies.split('; ').some((cookie) => {
-		const splitCookie = cookie.split('=');
-		const [cookieName, val] = splitCookie;
-		if (cookieName === name) {
-			roomCode = val;
-			return true;
-		}
-		return false;
-	});
-	return roomCode;
-}
-
 // Listen on connection event for incoming sockets
 io.on('connection', (socket) => {
 	console.log('a user connected');
@@ -174,28 +160,38 @@ io.on('connection', (socket) => {
 	} = socket;
 
 	// Parse cookie for room code
-	const code = getCookie(cookie, 'roomCode');
+	const code = helpers.getCookie(cookie, 'roomCode');
 
 	console.log(`socket id: ${id}, joining room with code: ${code}`);
 	socket.join(code);
-	rooms[code].playerCount += 1;
-	console.log(`current room id: ${code} count: ${rooms[code].playerCount}`);
+	helpers.addPlayerToRoom(id, rooms, code);
+
+	// If room has 3+ people and not already started, start the game
+	if (rooms[code].playerCount >= 3 && rooms[code].started === false) {
+		rooms[code].started = true;
+		intervalHandles[code] = helpers.startGame(5000, rooms, code, io);
+	}
 
 	socket.on('chat message', (msg) => {
 		console.log(`message: ${msg}`);
 	});
 
-	socket.on('draw', (data) => {
-		socket.broadcast.emit('draw', data);
+	socket.on('finished', () => {
+		// Check if the current user can draw
+		if (data.forceDraw || (id === rooms[code].currentlyDrawing && rooms[code].started)) {
+			io.to(code).emit('finished');
+		}
 	});
 
-	socket.on('finished', () => {
-		socket.broadcast.emit('finished');
+	socket.on('draw', (data) => {
+		// Check if the current user can draw
+		if (data.forceDraw || (id === rooms[code].currentlyDrawing && rooms[code].started)) {
+			io.to(code).emit('draw', data);
+		}
 	});
 
 	socket.on('disconnect', () => {
 		console.log('user disconnected');
-		rooms[code].playerCount -= 1;
-		console.log(`current room id: ${code} count: ${rooms[code].playerCount}`);
+		helpers.removePlayerFromRoom(id, rooms, code, intervalHandles);
 	});
 });
