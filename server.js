@@ -176,7 +176,7 @@ io.on('connection', (socket) => {
 		console.log(`message: ${msg}`);
 	});
 
-	socket.on('finished', () => {
+	socket.on('finished', (data) => {
 		// Check if the current user can draw
 		if (data.forceDraw || (id === rooms[code].currentlyDrawing && rooms[code].started)) {
 			io.to(code).emit('finished');
@@ -186,6 +186,7 @@ io.on('connection', (socket) => {
 	socket.on('draw', (data) => {
 		// Check if the current user can draw
 		if (data.forceDraw || (id === rooms[code].currentlyDrawing && rooms[code].started)) {
+			console.log(data);
 			io.to(code).emit('draw', data);
 		}
 	});

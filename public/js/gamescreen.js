@@ -26,7 +26,7 @@ function startPosition() { // user is currently drawing
 function finishedPosition() { // user is finished drawing
 	drawing = false;
 	ctx.beginPath();
-	socket.emit('finished');
+	socket.emit('finished', { forceDraw });
 }
 
 function draw(event) {
@@ -36,9 +36,8 @@ function draw(event) {
 		ctx.lineWidth = penThickness;
 		ctx.lineCap = penCap;
 		ctx.strokeStyle = penColor;
-
-		const x = event.clientX - rect.left;
-		const y = event.clientY - rect.top;
+		const x = event.pageX - rect.left;
+		const y = event.pageY - rect.top;
 
 		const data = {
 			penThickness,
@@ -46,6 +45,7 @@ function draw(event) {
 			penColor,
 			x,
 			y,
+			forceDraw,
 		};
 
 		socket.emit('draw', data);
