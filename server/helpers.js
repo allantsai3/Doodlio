@@ -78,7 +78,7 @@ function addPlayerToRoom(id, rooms, code) {
 	logActivity(rooms, code);
 }
 
-function removePlayerFromRoom(id, rooms, code, intervalHandles) {
+function removePlayerFromRoom(id, rooms, code, intervalHandles, io) {
 	const room = rooms[code];
 	// Delete room if no players are left
 	if (rooms[code].playerCount <= 1) {
@@ -92,6 +92,7 @@ function removePlayerFromRoom(id, rooms, code, intervalHandles) {
 		room.playerCount -= 1;
 		const index = rooms[code].players.indexOf(id);
 		rooms[code].players.splice(index, 1);
+		io.to(code).emit('updatePlayer', rooms[code].players);
 	}
 	logActivity(rooms, code);
 }

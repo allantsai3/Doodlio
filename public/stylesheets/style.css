@@ -3,7 +3,7 @@ html {
 }
 
 body {
-	background-color: #434c5e;
+	background-color: #3B4252;
 }
 
 .navbar {
@@ -26,11 +26,61 @@ body {
 	padding: 4em;
 }
 
-/* .form-input button {
-	width: 40%;
-	margin: 5px 0 25px;
-} */
+/* Game Page */
 
-/* .form-group {
-	margin-bottom: 40px;
-} */
+.game-container {
+	background-color: #d8dee9;
+	margin: 150px auto 0px;
+	border-radius: 10px;
+	padding: 1em;
+	width: 1100px;
+	max-height: 700px;
+}
+
+.player-list {
+	list-style: none;
+	min-width: 240px;
+	max-width: 250px;
+	display: block;
+	overflow-y: auto;
+}
+
+.player-list li {
+	background-color:aliceblue;
+	border: solid 1px#5E81AC;
+	font-weight: bold;
+	margin-bottom: 5px;
+	padding: 0.5em 0em;
+	padding-left: 0.5em;
+	border-radius: 10px;
+}
+
+.game-canvas {
+	background-color: #d8dee9;
+	/* margin: 1em; */
+	padding: 1em;
+}
+
+canvas {
+	padding: 0;
+	margin: auto;
+	display: block;
+}
+
+.chat-container {
+	background:aliceblue;
+	position: relative;
+}
+
+.chat-messages {
+	max-height: 630px;
+	width:250px;
+	overflow-wrap: break-word;
+	padding: 1em;
+}
+
+.chat-container #chat-form {
+	min-width: 100%;
+	position: absolute;
+	bottom: 0;
+}

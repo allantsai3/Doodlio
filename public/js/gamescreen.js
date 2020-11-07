@@ -35,15 +35,42 @@ socket.on('draw', (data) => {
 
 socket.on('gamestate', (data) => {
 	canDraw = (socket.id === data.currentDrawingPlayer);
-	$('#currentDrawingPlayer').text(canDraw);
+	$('#currentDrawingPlayer').text(data.currentDrawingPlayer);
 });
 
 // Chat functions
-$('form').submit((e) => {
+$('#chat-form').submit((e) => {
 	console.log('submitting form');
+	if ($('#chat-input').val().trim() === '') {
+		return false;
+	}
 	// Prevent page from reloading
 	e.preventDefault();
-	socket.emit('chat message', $('#m').val());
-	$('#m').val('');
+	// Emit message to server
+	socket.emit('chatMessage', $('#chat-input').val());
+	// Reset input field
+	$('#chat-form')[0].reset();
 	return false;
+});
+
+// Update Chat DOM
+socket.on('chatMessage', (msg) => {
+	$('#messages').append($('<li>').text(msg));
+});
+
+socket.on('serverMessage', (msg) => {
+	$('#messages').append($('<li>').text(`${msg}`).css('color', 'grey'));
+});
+
+socket.on('playerDisconnect', (msg) => {
+	$('#messages').append($('<li>').text(`${msg}`).css('color', 'red'));
+});
+
+// Update Player List DOM of individual room
+socket.on('updatePlayer', (playerList) => {
+	$('#playerList').text('');
+	playerList.forEach((user) => {
+		// $('#playerList').append($('<li>').attr('class', 'list-group-item').text(`${user}`));
+		$('#playerList').append($('<li>').text(`${user}`));
+	});
 });
