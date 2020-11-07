@@ -27,7 +27,7 @@ function connectDB() {
 	con.connect((err) => {
 		if (err) {
 			console.log('error connecting to database: database servers or proxy may not be on!');
-		};
+		}
 		console.log('Connected to db!!');
 	});
 
