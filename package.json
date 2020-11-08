@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "yarn run eslint && nodemon server.js",
+    "start": "node server.js",
+    "dev": "yarn run eslint && nodemon server.js",
     "clean": "rm -rf node_modules",
     "test": "mocha",
     "eslint": "./node_modules/.bin/eslint ./"
@@ -16,6 +17,7 @@
     "express": "~4.16.0",
     "http-errors": "~1.6.2",
     "morgan": "~1.9.0",
+    "mysql": "^2.18.1",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {

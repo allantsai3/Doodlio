@@ -26,7 +26,26 @@ yarn install
 yarn run start
 ```
 
+# For development mode
+```
+yarn run dev
+```
+
+To connect to database in local development,
+1. Install the Cloud SQL Proxy client on your local machine
+```
+https://cloud.google.com/sql/docs/mysql/quickstart-proxy-test
+```
+
+2. execute the database listener
+```
+./cloud_sql_proxy -instances=cmpt470project-294201:us-west1:doodliodata=tcp:3306
+```
+
 ## Test with
 ``` 
 yarn run test
 ```
+
+## Turning the instance on/off
+If you can't connect to the database, the Cloud SQL instance might be off. Follow steps 1-3 above to reach the Overview for the instance. At the top of the screen are various buttons, one of which is a Start/Stop button. If the instance is off, click "Start" to turn the instance on to be able to access the database. Make sure to turn it back off once you are done.
