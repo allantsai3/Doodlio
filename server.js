@@ -176,18 +176,12 @@ io.on('connection', (socket) => {
 		console.log(`message: ${msg}`);
 	});
 
-	socket.on('finished', () => {
-		// Check if the current user can draw
-		if (data.forceDraw || (id === rooms[code].currentlyDrawing && rooms[code].started)) {
-			io.to(code).emit('finished');
-		}
-	});
-
 	socket.on('draw', (data) => {
-		// Check if the current user can draw
-		if (data.forceDraw || (id === rooms[code].currentlyDrawing && rooms[code].started)) {
-			io.to(code).emit('draw', data);
-		}
+		io.to(code).emit('draw', data);
+		// // Check if the current user can draw
+		// if ((id === rooms[code].currentlyDrawing && rooms[code].started)) {
+		// 	io.to(code).emit('draw', data);
+		// }
 	});
 
 	socket.on('disconnect', () => {

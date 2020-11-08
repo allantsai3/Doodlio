@@ -1,11 +1,16 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const penThickness = 10; // default 20, changes when player clicks on another brush thickness
+const penThickness = 5; // default 20, changes when player clicks on another brush thickness
 const penCap = 'round'; // makes the line circular
 const penColor = 'black'; // default black, changes when player clicks on another brush color
-const rect = canvas.getBoundingClientRect();
 
-let drawing = false; // default false, changes when player is drawing?
+let drawingBool = false;
+let drawingDotBool = false;
+let prevX = 0;
+let prevY = 0;
+let currX = 0;
+let currY = 0;
+
 let canDraw = false;
 // Temporary feature for development
 let forceDraw = false;
@@ -19,61 +24,101 @@ $('#forceDrawing').click(() => {
 });
 
 // Drawing functions
-function startPosition() { // user is currently drawing
-	drawing = true;
-}
-
-function finishedPosition() { // user is finished drawing
-	drawing = false;
+function draw() {
 	ctx.beginPath();
-	socket.emit('finished');
+	ctx.strokeStyle = penColor;
+	ctx.lineWidth = penThickness;
+	ctx.lineCap = penCap;
+	ctx.moveTo(prevX, prevY);
+	ctx.lineTo(currX, currY);
+	ctx.stroke();
+	ctx.closePath();
+
+	const data = {
+		penColor,
+		penThickness,
+		penCap,
+		prevX,
+		prevY,
+		currX,
+		currY,
+	};
+
+	socket.emit('draw', data);
 }
 
-function draw(event) {
-	if (drawing === false) return; // if player is not holding down the mouse
-
+function GetPos(type, event) {
 	if (canDraw || forceDraw) {
-		ctx.lineWidth = penThickness;
-		ctx.lineCap = penCap;
-		ctx.strokeStyle = penColor;
+		if (type === 'down') {
+			prevX = currX;
+			prevY = currY;
+			currX = event.clientX - canvas.offsetLeft;
+			currY = event.clientY - canvas.offsetTop;
 
-		const x = event.clientX - rect.left;
-		const y = event.clientY - rect.top;
+			drawingBool = true;
+			drawingDotBool = true;
 
-		const data = {
-			penThickness,
-			penCap,
-			penColor,
-			x,
-			y,
-		};
+			if (drawingDotBool) {
+				ctx.beginPath();
+				ctx.strokeStyle = penColor;
+				ctx.lineWidth = penThickness;
+				ctx.lineCap = penCap;
+				ctx.moveTo(currX, currY);
+				ctx.lineTo(currX, currY);
+				ctx.stroke();
+				ctx.closePath();
+				drawingDotBool = false;
 
-		socket.emit('draw', data);
+				const data = {
+					penColor,
+					penThickness,
+					penCap,
+					prevX: currX,
+					prevY: currY,
+					currX,
+					currY,
+				};
 
-		ctx.lineTo(x, y);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.moveTo(x, y);
+				socket.emit('draw', data);
+			}
+		}
+		if (type === 'up' || type === 'out') {
+			drawingBool = false;
+		}
+		if (type === 'move') {
+			if (drawingBool) {
+				prevX = currX;
+				prevY = currY;
+				currX = event.clientX - canvas.offsetLeft;
+				currY = event.clientY - canvas.offsetTop;
+				draw();
+			}
+		}
 	}
 }
 
-canvas.addEventListener('mousedown', startPosition); // on mouse down, drawing = true
-canvas.addEventListener('mouseup', finishedPosition); // on mouse up, drawing = false
-canvas.addEventListener('mousemove', draw);
-
-socket.on('finished', () => {
-	ctx.beginPath();
+canvas.addEventListener('mousemove', (event) => {
+	GetPos('move', event);
+});
+canvas.addEventListener('mousedown', (event) => {
+	GetPos('down', event);
+});
+canvas.addEventListener('mouseup', (event) => {
+	GetPos('up', event);
+});
+canvas.addEventListener('mouseout', (event) => {
+	GetPos('out', event);
 });
 
 socket.on('draw', (data) => {
+	ctx.beginPath();
+	ctx.strokeStyle = data.penColor;
 	ctx.lineWidth = data.penThickness;
 	ctx.lineCap = data.penCap;
-	ctx.strokeStyle = data.penColor;
-
-	ctx.lineTo(data.x, data.y);
+	ctx.moveTo(data.prevX, data.prevY);
+	ctx.lineTo(data.currX, data.currY);
 	ctx.stroke();
-	ctx.beginPath();
-	ctx.moveTo(data.x, data.y);
+	ctx.closePath();
 });
 
 socket.on('gamestate', (data) => {
