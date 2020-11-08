@@ -43,6 +43,8 @@ app.set('view engine', 'html');
 const rooms = {};
 const intervalHandles = {};
 
+const turnTime = 5000;
+
 // Define paths
 app.get('/', (req, res) => {
 	res.render('home.html');
@@ -182,7 +184,7 @@ io.on('connection', (socket) => {
 	// If room has 3+ people and not already started, start the game
 	if (rooms[code].playerCount >= 3 && rooms[code].started === false) {
 		rooms[code].started = true;
-		intervalHandles[code] = helpers.startGame(8000, rooms, code, io, wordBank);
+		intervalHandles[code] = helpers.startGame(turnTime, rooms, code, io, wordBank);
 	}
 
 	// listen for chatMessage
