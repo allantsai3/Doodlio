@@ -44,12 +44,27 @@ function changeDrawingPlayer(rooms, code, io) {
 	io.to(code).emit('gamestate', { currentDrawingPlayer: room.currentlyDrawing });
 }
 
-function startGame(time, rooms, code, io) {
+function sendRandomWord(rooms, code, io, wordBank) {
+	const word = (wordBank.length !== 0) ? wordBank[Math.floor(Math.random() * wordBank.length)] : 'none';
+	for (let i = 0; i < rooms[code].players.length; i += 1) {
+		if (rooms[code].players[i] === rooms[code].currentlyDrawing) {
+			io.to(rooms[code].players[i]).emit('wordPrompt', `Your word to draw is: ${word}`);
+		} else {
+			io.to(rooms[code].players[i]).emit('wordPrompt', `Guess what's being drawn: ${word.replace(/[a-z]/gi, '\xa0_').replace(/ /g, '\xa0\xa0').replace(/-/g, '\xa0-')}`);
+		}
+		// eslint-disable-next-line no-param-reassign
+		rooms[code].currentWordToDraw = word;
+	}
+}
+
+function startGame(time, rooms, code, io, wordBank) {
 	// Start count down for player
 	// Execute player change immediately
 	changeDrawingPlayer(rooms, code, io);
+	sendRandomWord(rooms, code, io, wordBank);
 	return setInterval(() => {
 		changeDrawingPlayer(rooms, code, io);
+		sendRandomWord(rooms, code, io, wordBank);
 	}, time);
 }
 
@@ -60,6 +75,7 @@ function createRoom() {
 		playerCount: 0,
 		currentlyDrawing: '',
 		currentlyDrawingIndex: -1,
+		currentWordToDraw: '',
 	};
 	return room;
 }
