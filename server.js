@@ -8,8 +8,11 @@ const logger = require('morgan');
 const debug = require('debug')('demo:server');
 const http = require('http');
 const socketio = require('socket.io');
-const helpers = require('./server/helpers');
+
+const passport = require('passport');
+const session = require('express-session');
 const db = require('./server/database');
+const helpers = require('./server/helpers');
 
 const app = express();
 
@@ -37,9 +40,15 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.engine('html', require('ejs').renderFile);
 
-app.set('view engine', 'html');
+app.set('view engine', 'ejs');
+app.use(session({ secret: 'MySecret', resave: false, saveUninitialized: true }));
 
-// Dynamic content: store on server
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use('/auth', require('./routes/auth'));
+
+// Move to database
 const rooms = {};
 const intervalHandles = {};
 
@@ -47,7 +56,7 @@ const turnTime = 5000;
 
 // Define paths
 app.get('/', (req, res) => {
-	res.render('home.html');
+	res.render('home', { user: req.user });
 });
 
 // Post request instead of using sockets since we don't need constant updates
@@ -76,7 +85,7 @@ app.post('/', (req, res) => {
 		}
 	} else {
 		console.log('Invalid room code');
-		res.render('home.html');
+		res.render('home', { user: req.user });
 	}
 });
 

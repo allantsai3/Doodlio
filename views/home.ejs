@@ -56,10 +56,19 @@
 						aria-disabled="true">Feature Request</a>
 				</li>
 				<li class="nav-item">
-					<a class="nav-link" id="pills-login-tab" data-toggle="pill"
-						href="#pills-login" role="tab"
-						aria-controls="pills-login"
-						aria-selected="false">Login</a>
+					<% if(!user){ %>
+						<a class="nav-link" id="pills-login-tab" data-toggle="pill"
+							href="#pills-login" role="tab"
+							aria-controls="pills-login"
+							aria-selected="false">Login</a>
+					<% } else { %>	
+							<a class="nav-link" id="pills-username-tab" 
+								data-toggle="pill" href="#pills-username" role="tab" 
+								aria-contorls="pills-username" aria-selected="false"><%= user.username %></a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="auth/logout">Logout</a>
+					<% } %>
 				</li>
 			</ul>
 		</div>
@@ -69,6 +78,7 @@
 		<div class="col-md-12 main-section">
 			<div class="modal-content">
 				<div class="tab-content" id="pills-tabContent">
+					
 					<div class="tab-pane fade show active" id="pills-home"
 						role="tabpanel" aria-labelledby="pills-home-tab">
 						<form action="/" method="post">
@@ -78,11 +88,19 @@
 									id="code" name="code"
 									aria-describedby="Room Code" />
 							</div>
-							<button class="btn btn-primary" type="submit">
-								Play!
-							</button>
+							<% if(!user){ %>
+								<a class="btn btn-primary" data-toggle="pill"
+									href="#pills-login" role="tab"
+									aria-controls="pills-login"
+									aria-selected="false">Play!</a>
+							<% } else {%>
+								<button class="btn btn-primary" type="submit">
+									Play!
+								</button>
+							<% } %>
 						</form>
 					</div>
+
 					<div class="tab-pane fade" id="pills-gallery"
 						role="tabpanel" aria-labelledby="pills-gallery-tab">
 						Gallery coming soon
@@ -93,7 +111,7 @@
 					</div>
 					<div class="tab-pane fade" id="pills-login" role="tabpanel"
 						aria-labelledby="pills-login-tab">
-						<a class="btn btn-outline-dark" href="#" role="button">
+						<a class="btn btn-outline-dark" href="auth/google" role="button">
 							<img width="20px"
 								style="margin-bottom:3px; margin-right:5px"
 								alt="Google sign-in"
@@ -101,6 +119,22 @@
 							Login with Google
 						</a>
 					</div>
+					
+					<div class="tab-pane fade" id="pills-username"
+						role="tabpanel" aria-labelledby="pills-username-tab">
+						<form action="auth/" method="post">
+							<div class="form-group">
+								<label for="uname"> Change your username: </label>
+								<input type="text" class="form-control"
+									id="uname" name="uname"
+									aria-describedby="User name" />
+							</div>
+							<button class="btn btn-primary" type="submit">
+									Change!
+							</button>
+						</form>
+					</div>
+
 				</div>
 			</div>
 		</div>
