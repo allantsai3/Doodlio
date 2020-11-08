@@ -31,6 +31,11 @@ yarn run start
 yarn run dev
 ```
 
+## Test with
+``` 
+yarn run test
+```
+
 To connect to database in local development,
 1. Install the Cloud SQL Proxy client on your local machine
 ```
@@ -42,10 +47,12 @@ https://cloud.google.com/sql/docs/mysql/quickstart-proxy-test
 ./cloud_sql_proxy -instances=cmpt470project-294201:us-west1:doodliodata=tcp:3306
 ```
 
-## Test with
-``` 
-yarn run test
-```
-
 ## Turning the instance on/off
-If you can't connect to the database, the Cloud SQL instance might be off. Follow steps 1-3 above to reach the Overview for the instance. At the top of the screen are various buttons, one of which is a Start/Stop button. If the instance is off, click "Start" to turn the instance on to be able to access the database. Make sure to turn it back off once you are done.
+If you can't connect to the database, the Cloud SQL instance might be off. Follow these steps to reach the Overview for the instance:
+1. Go to the GCP console for doodlio470@gmail.com, make sure your active project is "CMPT470Project"
+2. In the Navigation menu on the left, scroll down to the Databases section and click on "SQL"
+3. Click "doodliodata" under Instance ID in the instances table
+At the top of the screen are various buttons, one of which is a Start/Stop button. If the instance is off, click "Start" to turn the instance on to be able to access the database. **Make sure to turn it back off once you are done.**
+
+
+

@@ -127,6 +127,10 @@ socket.on('gamestate', (data) => {
 	$('#currentDrawingPlayer').text(data.currentDrawingPlayer);
 });
 
+socket.on('wordPrompt', (word) => {
+	$('#word').text(word);
+});
+
 // Chat functions
 $('#chat-form').submit((e) => {
 	console.log('submitting form');

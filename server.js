@@ -14,11 +14,18 @@ const db = require('./server/database');
 const app = express();
 
 const con = db.connectDB();
-con.query('SELECT * FROM Gallery', (err, result) => {
+const wordBank = [];
+
+// fetch words from database
+con.query('SELECT Word FROM DefaultWordBank', (err, result) => {
 	if (err) {
 		console.log('error fetching from database: database servers or proxy may not be on!');
+	} else {
+		for (let i = 0; i < result.length; i += 1) {
+			wordBank.push(result[i].Word);
+		}
+		console.log(wordBank.length); // should be 345 for now
 	}
-	console.log(result);
 });
 
 app.use(logger('dev'));
@@ -175,7 +182,7 @@ io.on('connection', (socket) => {
 	// If room has 3+ people and not already started, start the game
 	if (rooms[code].playerCount >= 3 && rooms[code].started === false) {
 		rooms[code].started = true;
-		intervalHandles[code] = helpers.startGame(5000, rooms, code, io);
+		intervalHandles[code] = helpers.startGame(8000, rooms, code, io, wordBank);
 	}
 
 	// listen for chatMessage
