@@ -53,8 +53,8 @@ function GetPos(type, event) {
 		if (type === 'down') {
 			prevX = currX;
 			prevY = currY;
-			currX = event.clientX - canvas.offsetLeft;
-			currY = event.clientY - canvas.offsetTop;
+			currX = event.pageX - canvas.offsetLeft;
+			currY = event.pageY - canvas.offsetTop;
 
 			drawingBool = true;
 			drawingDotBool = true;
@@ -90,8 +90,8 @@ function GetPos(type, event) {
 			if (drawingBool) {
 				prevX = currX;
 				prevY = currY;
-				currX = event.clientX - canvas.offsetLeft;
-				currY = event.clientY - canvas.offsetTop;
+				currX = event.pageX - canvas.offsetLeft;
+				currY = event.pageY - canvas.offsetTop;
 				draw();
 			}
 		}
