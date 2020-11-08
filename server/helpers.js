@@ -62,9 +62,11 @@ function startGame(time, rooms, code, io, wordBank) {
 	// Execute player change immediately
 	changeDrawingPlayer(rooms, code, io);
 	sendRandomWord(rooms, code, io, wordBank);
+	io.to(code).emit('turntimer', time / 1000);
 	return setInterval(() => {
 		changeDrawingPlayer(rooms, code, io);
 		sendRandomWord(rooms, code, io, wordBank);
+		io.to(code).emit('turntimer', time / 1000);
 	}, time);
 }
 

@@ -4,6 +4,8 @@ const penThickness = 5; // default 20, changes when player clicks on another bru
 const penCap = 'round'; // makes the line circular
 const penColor = 'black'; // default black, changes when player clicks on another brush color
 
+let timeInterval;
+
 let drawingBool = false;
 let drawingDotBool = false;
 let prevX = 0;
@@ -129,6 +131,19 @@ socket.on('gamestate', (data) => {
 
 socket.on('wordPrompt', (word) => {
 	$('#word').text(word);
+});
+
+socket.on('turntimer', (time) => {
+	if (timeInterval != null) {
+		window.clearInterval(timeInterval);
+	}
+	document.getElementById('gameTimer').innerHTML = time;
+	timeInterval = window.setInterval(() => {
+		let timeLeft = parseInt(document.getElementById('gameTimer').innerHTML, 10);
+		console.log(timeLeft);
+		timeLeft -= 1;
+		document.getElementById('gameTimer').innerHTML = timeLeft;
+	}, 1000);
 });
 
 // Chat functions
