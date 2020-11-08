@@ -185,11 +185,10 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('draw', (data) => {
-		io.to(code).emit('draw', data);
-		// // Check if the current user can draw
-		// if ((id === rooms[code].currentlyDrawing && rooms[code].started)) {
-		// 	io.to(code).emit('draw', data);
-		// }
+		// Check if the current user can draw
+		if ((id === rooms[code].currentlyDrawing && rooms[code].started)) {
+			io.to(code).emit('draw', data);
+		}
 	});
 
 	socket.on('disconnect', () => {
