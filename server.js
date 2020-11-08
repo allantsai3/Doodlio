@@ -44,9 +44,7 @@ app.get('/', (req, res) => {
 // Post request instead of using sockets since we don't need constant updates
 app.post('/', (req, res) => {
 	const {
-		body: {
-			code = '',
-		},
+		body: { code = '' },
 	} = req;
 
 	// Room are 4 digits long
@@ -60,7 +58,11 @@ app.post('/', (req, res) => {
 			console.log('creating new room...');
 			rooms[code] = helpers.createRoom();
 			// Set cookie (expires after 10 minutes)
-			res.cookie('roomCode', code, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
+			res.cookie('roomCode', code, {
+				httpOnly: true,
+				sameSite: true,
+				maxAge: 1000 * 600,
+			});
 			res.render('gamescreen.html');
 		}
 	} else {
@@ -98,7 +100,7 @@ function normalizePort(val) {
 	}
 
 	if (port >= 0) {
-	// port number
+		// port number
 		return port;
 	}
 
@@ -118,9 +120,7 @@ function onError(error) {
 		throw error;
 	}
 
-	const bind = typeof port === 'string'
-		? `Pipe ${port}`
-		: `Port ${port}`;
+	const bind = typeof port === 'string' ? `Pipe ${port}` : `Port ${port}`;
 
 	// handle specific listen errors with friendly messages
 	switch (error.code) {
@@ -140,9 +140,7 @@ function onError(error) {
 // Event listener for HTTP server "listening" event.
 function onListening() {
 	const addr = server.address();
-	const bind = typeof addr === 'string'
-		? `pipe ${addr}`
-		: `port ${addr.port}`;
+	const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
 	debug(`Listening on ${bind}`);
 }
 
@@ -159,14 +157,9 @@ const io = socketio(server);
 // Listen on connection event for incoming sockets
 io.on('connection', (socket) => {
 	console.log('a user connected');
-	const {
-		id,
-		handshake: {
-			headers: {
-				cookie = '',
-			} = {},
-		} = {},
-	} = socket;
+	socket.emit('serverMessage', 'Welcome to Doodl.io!');
+
+	const { id, handshake: { headers: { cookie = '' } = {} } = {} } = socket;
 
 	// Parse cookie for room code
 	const code = helpers.getCookie(cookie, 'roomCode');
@@ -175,14 +168,20 @@ io.on('connection', (socket) => {
 	socket.join(code);
 	helpers.addPlayerToRoom(id, rooms, code);
 
+	// Broadcast when a user connects, update player list
+	io.to(code).emit('serverMessage', `${id} has joined the room`);
+	io.to(code).emit('updatePlayer', rooms[code].players);
+
 	// If room has 3+ people and not already started, start the game
 	if (rooms[code].playerCount >= 3 && rooms[code].started === false) {
 		rooms[code].started = true;
 		intervalHandles[code] = helpers.startGame(5000, rooms, code, io);
 	}
 
-	socket.on('chat message', (msg) => {
-		console.log(`message: ${msg}`);
+	// listen for chatMessage
+	socket.on('chatMessage', (msg) => {
+		// emit back to clients in same room, replace id with Nickname later
+		io.to(code).emit('chatMessage', `${id}: ${msg}`);
 	});
 
 	socket.on('draw', (data) => {
@@ -195,6 +194,7 @@ io.on('connection', (socket) => {
 
 	socket.on('disconnect', () => {
 		console.log('user disconnected');
-		helpers.removePlayerFromRoom(id, rooms, code, intervalHandles);
+		io.to(code).emit('playerDisconnect', `${id} has left the room`);
+		helpers.removePlayerFromRoom(id, rooms, code, intervalHandles, io);
 	});
 });
