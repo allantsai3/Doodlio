@@ -209,6 +209,14 @@ io.on('connection', (socket) => {
 		}
 	});
 
+	socket.on('clear', () => {
+		io.to(code).emit('clear');
+	});
+
+	socket.on('fill', (color) => {
+		io.to(code).emit('fill', color);
+	});
+
 	socket.on('disconnect', () => {
 		console.log('user disconnected');
 		io.to(code).emit('playerDisconnect', `${id} has left the room`);

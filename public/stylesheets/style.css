@@ -67,6 +67,66 @@ canvas {
 	display: block;
 }
 
+.features {
+	display: inline;
+}
+
+#brush-indicator {
+	width: 30px;
+	height: 30px;
+	display: inline-block;
+}
+
+.brush-colors {
+	font-size: 0;
+	display: inline;
+}
+
+.colors {
+	width: 30px;
+	height: 30px;
+	display: inline-block;
+}
+
+.brush-eraser-fill {
+	display: inline;
+}
+
+#brush {
+	width: 30px;
+	height: 30px;
+	display: inline-block;
+}
+
+#eraser {
+	width: 30px;
+	height: 30px;
+	display: inline-block;
+}
+
+#fill {
+	width: 30px;
+	height: 30px;
+	display: inline-block;
+}
+
+.brush-sizes {
+	display: inline;
+}
+
+.sizes {
+	width: 30px;
+	height: 30px;
+	display: inline-block;
+}
+
+#clear-canvas {
+	width: 30px;
+	height: 30px;
+	display: inline-block;
+}
+
+
 .chat-container {
 	background:aliceblue;
 	position: relative;

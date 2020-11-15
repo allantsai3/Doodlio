@@ -1,8 +1,15 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const penThickness = 5; // default 20, changes when player clicks on another brush thickness
-const penCap = 'round'; // makes the line circular
-const penColor = 'black'; // default black, changes when player clicks on another brush color
+const penCap = 'round';
+let penThickness = 5;
+let penColor = 'black';
+const brushColors = document.querySelectorAll('.colors');
+const brushSizes = document.querySelectorAll('.sizes');
+const clear = document.getElementById('clear-canvas');
+const eraser = document.getElementById('eraser');
+const fill = document.getElementById('fill');
+const brushIndicator = document.getElementById('brush-indicator');
+const brush = document.getElementById('brush');
 
 let timeInterval;
 
@@ -26,6 +33,29 @@ $('#forceDrawing').click(() => {
 });
 
 // Drawing functions
+function changeBrushColor(color, eraserBool) {
+	if (canDraw || forceDraw) {
+		penColor = color;
+		if (!eraserBool) {
+			brushIndicator.style.backgroundColor = color;
+		}
+	}
+}
+
+function changeBrushSize(thickness) {
+	if (canDraw || forceDraw) {
+		if (thickness === 'smallest') {
+			penThickness = 5;
+		} if (thickness === 'small') {
+			penThickness = 15;
+		} if (thickness === 'large') {
+			penThickness = 25;
+		} if (thickness === 'largest') {
+			penThickness = 35;
+		}
+	}
+}
+
 function draw() {
 	ctx.beginPath();
 	ctx.strokeStyle = penColor;
@@ -100,6 +130,21 @@ function GetPos(type, event) {
 	}
 }
 
+function clearBoard() {
+	if (canDraw || forceDraw) {
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		socket.emit('clear');
+	}
+}
+
+function fillBoard() {
+	if (canDraw || forceDraw) {
+		ctx.fillStyle = brushIndicator.style.backgroundColor;
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		socket.emit('fill', brushIndicator.style.backgroundColor);
+	}
+}
+
 canvas.addEventListener('mousemove', (event) => {
 	GetPos('move', event);
 });
@@ -112,6 +157,24 @@ canvas.addEventListener('mouseup', (event) => {
 canvas.addEventListener('mouseout', (event) => {
 	GetPos('out', event);
 });
+brushColors.forEach((el) => el.addEventListener('click', (event) => {
+	changeBrushColor(event.target.id, false);
+}));
+brushSizes.forEach((el) => el.addEventListener('click', (event) => {
+	changeBrushSize(event.target.id);
+}));
+clear.addEventListener('click', () => {
+	clearBoard();
+});
+eraser.addEventListener('click', () => {
+	changeBrushColor('white', true);
+});
+fill.addEventListener('click', () => {
+	fillBoard();
+});
+brush.addEventListener('click', () => {
+	changeBrushColor(brushIndicator.style.backgroundColor, false);
+});
 
 socket.on('draw', (data) => {
 	ctx.beginPath();
@@ -122,6 +185,15 @@ socket.on('draw', (data) => {
 	ctx.lineTo(data.currX, data.currY);
 	ctx.stroke();
 	ctx.closePath();
+});
+
+socket.on('clear', () => {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+socket.on('fill', (color) => {
+	ctx.fillStyle = color;
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
 });
 
 socket.on('gamestate', (data) => {
@@ -136,6 +208,7 @@ socket.on('wordPrompt', (word) => {
 socket.on('turntimer', (time) => {
 	if (timeInterval != null) {
 		window.clearInterval(timeInterval);
+		socket.emit('clear');
 	}
 	document.getElementById('gameTimer').innerHTML = time;
 	timeInterval = window.setInterval(() => {
