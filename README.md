@@ -37,12 +37,28 @@ yarn run test
 ```
 
 To connect to database in local development,
-1. Install the Cloud SQL Proxy client on your local machine
+1. Install Google Cloud SDK
+```
+https://cloud.google.com/sdk/docs/install
+```
+
+2. Run following command and sign in with doodlio@gmail.com
+```
+
+gcloud auth login
+```
+
+3. Verify doodlio@gmail.com account is active by running the following.
+```
+gcloud auth list
+```
+
+4. Install the Cloud SQL Proxy client on your local machine
 ```
 https://cloud.google.com/sql/docs/mysql/quickstart-proxy-test
 ```
 
-2. execute the database listener
+5. execute the database listener
 ```
 ./cloud_sql_proxy -instances=cmpt470project-294201:us-west1:doodliodata=tcp:3306
 ```
