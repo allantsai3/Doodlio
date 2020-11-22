@@ -44,7 +44,6 @@ https://cloud.google.com/sdk/docs/install
 
 2. Run following command and sign in with doodlio@gmail.com
 ```
-
 gcloud auth login
 ```
 
