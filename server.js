@@ -193,7 +193,7 @@ io.on('connection', (socket) => {
 	// If room has 3+ people and not already started, start the game
 	if (rooms[code].playerCount >= 3 && rooms[code].started === false) {
 		rooms[code].started = true;
-		intervalHandles[code] = helpers.startGame(turnTime, rooms, code, io, wordBank);
+		helpers.startGame(rooms, code, io, wordBank);
 	}
 
 	// listen for chatMessage
@@ -207,6 +207,13 @@ io.on('connection', (socket) => {
 		if (data.forceDraw || (id === rooms[code].currentlyDrawing && rooms[code].started)) {
 			io.to(code).emit('draw', data);
 		}
+	});
+
+	// Once the drawer picks a word, start the turn
+	socket.on('wordPicked', (word) => {
+		rooms[code].currentWordToDraw = word;
+		console.log(word);
+		intervalHandles[code] = helpers.startTurn(turnTime, rooms, code, io, wordBank);
 	});
 
 	socket.on('disconnect', () => {
