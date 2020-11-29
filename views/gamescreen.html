@@ -23,6 +23,29 @@
 </head>
 
 <body>
+	<!-- Modal -->
+	<div class="modal fade" id='wordModal' role='form' tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			
+			<!-- Modal content -->
+			<div class="modal-content">
+				<div class="modal-header">
+					<p>Pick one of the words below to draw:</p>
+				</div>
+				<div class="modal-body">
+					<button class="btn btn-primary" onclick="pickWord(0)" id="word0">word1</button>
+					<button class="btn btn-primary" onclick="pickWord(1)" id="word1">word2</button>
+					<button class="btn btn-primary" onclick="pickWord(2)" id="word2">word3</button>
+				</div>
+				<div class="modal-footer">
+					<p id="pickWordTimer"></p>
+				</div>
+			</div>
+
+
+		</div>
+	</div>
+
 	<!-- Collapsable Navbar -->
 	<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
 		<a class="navbar-brand" href="/">

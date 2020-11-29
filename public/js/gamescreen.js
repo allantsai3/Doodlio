@@ -11,7 +11,8 @@ const fill = document.getElementById('fill');
 const brushIndicator = document.getElementById('brush-indicator');
 const brush = document.getElementById('brush');
 
-let timeInterval;
+let timeInterval; // id for turn timer
+let pickTimer; // id for timer for picking a word
 
 let drawingBool = false;
 let drawingDotBool = false;
@@ -213,9 +214,38 @@ socket.on('turntimer', (time) => {
 	document.getElementById('gameTimer').innerHTML = time;
 	timeInterval = window.setInterval(() => {
 		let timeLeft = parseInt(document.getElementById('gameTimer').innerHTML, 10);
-		console.log(timeLeft);
+		// console.log(timeLeft);
 		timeLeft -= 1;
 		document.getElementById('gameTimer').innerHTML = timeLeft;
+		if (timeLeft <= 0) window.clearInterval(timeInterval);
+	}, 1000);
+});
+
+// eslint-disable-next-line no-unused-vars
+function pickWord(n) {
+	if (pickTimer != null) {
+		window.clearInterval(pickTimer);
+	}
+	const chosenWord = document.getElementById(`word${n}`).innerHTML;
+	$('#wordModal').modal('hide');
+	socket.emit('wordPicked', chosenWord);
+	console.log(chosenWord);
+}
+
+socket.on('wordModal', (words) => {
+	for (let i = 0; i < words.length; i += 1) {
+		document.getElementById(`word${i}`).innerHTML = words[i];
+	}
+	document.getElementById('pickWordTimer').innerHTML = 10;
+	$('#wordModal').modal({ backdrop: 'static', keyboard: false });
+	pickTimer = window.setInterval(() => {
+		let timeLeft = parseInt(document.getElementById('pickWordTimer').innerHTML, 10);
+		// console.log(timeLeft);
+		timeLeft -= 1;
+		document.getElementById('pickWordTimer').innerHTML = timeLeft;
+		if (timeLeft <= 0) {
+			pickWord(Math.floor(Math.random() * 3));
+		}
 	}, 1000);
 });
 
