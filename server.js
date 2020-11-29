@@ -209,6 +209,14 @@ io.on('connection', (socket) => {
 		}
 	});
 
+	socket.on('clear', () => {
+		io.to(code).emit('clear');
+	});
+
+	socket.on('fill', (color) => {
+		io.to(code).emit('fill', color);
+	});
+
 	// Once the drawer picks a word, start the turn
 	socket.on('wordPicked', (word) => {
 		rooms[code].currentWordToDraw = word;
