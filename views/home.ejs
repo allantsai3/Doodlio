@@ -61,9 +61,9 @@
 							href="#pills-login" role="tab"
 							aria-controls="pills-login"
 							aria-selected="false">Login</a>
-					<% } else { %>	
-							<a class="nav-link" id="pills-username-tab" 
-								data-toggle="pill" href="#pills-username" role="tab" 
+					<% } else { %>
+							<a class="nav-link" id="pills-username-tab"
+								data-toggle="pill" href="#pills-username" role="tab"
 								aria-contorls="pills-username" aria-selected="false"><%= user.username %></a>
 						</li>
 						<li class="nav-item">
@@ -78,7 +78,7 @@
 		<div class="col-md-12 main-section">
 			<div class="modal-content">
 				<div class="tab-content" id="pills-tabContent">
-					
+
 					<div class="tab-pane fade show active" id="pills-home"
 						role="tabpanel" aria-labelledby="pills-home-tab">
 						<form action="/" method="post">
@@ -118,10 +118,28 @@
 								src="/img/googleLogo.png" />
 							Login with Google
 						</a>
+						<br>
+						<br>
+						<a class="btn btn-outline-dark" data-toggle="pill" href="#pills-username" aria-contorls="pills-username" role="button">
+							Continue as a Guest
+						</a>
 					</div>
-					
+
 					<div class="tab-pane fade" id="pills-username"
 						role="tabpanel" aria-labelledby="pills-username-tab">
+						<% if(!user){ %>
+							<form action="auth/guest" method="post">
+								<div class="form-group">
+									<label for="uname"> Enter your name: </label>
+									<input type="text" class="form-control"
+										id="uname" name="uname"
+										aria-describedby="User name"/>
+								</div>
+								<button class="btn btn-primary" type="submit">
+										Play!
+								</button>
+							</form>
+						<% } else {%>
 						<form action="auth/" method="post">
 							<div class="form-group">
 								<label for="uname"> Change your username: </label>
@@ -133,8 +151,9 @@
 									Change!
 							</button>
 						</form>
-					</div>
+						<% } %>
 
+					</div>
 				</div>
 			</div>
 		</div>
