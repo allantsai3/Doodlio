@@ -33,4 +33,13 @@ router.post('/', (req, res) => {
 	});
 });
 
+let numGuest = 1;
+router.post('/guest', (req, res, next) => {
+	if (req.body.uname === '') {
+		req.body.uname = `Guest ${numGuest}`;
+	}
+	numGuest += 1;
+	return next();
+}, passport.authenticate('local'), authSuccess);
+
 module.exports = router;

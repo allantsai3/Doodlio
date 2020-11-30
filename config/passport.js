@@ -1,5 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
+const LocalStrategy = require('passport-local').Strategy;
 const keys = require('./keys');
 const db = require('../server/database');
 
@@ -10,7 +11,7 @@ passport.deserializeUser((user, done) => {
 	done(null, user);
 });
 
-// Google strategy, maybe create local strategy later for guest users.
+// Google strategy
 passport.use(new GoogleStrategy(
 	{
 		clientID: keys.google.clientID,
@@ -39,5 +40,16 @@ passport.use(new GoogleStrategy(
 		});
 	}),
 ));
+
+// Local strategy for guest Login
+passport.use(new LocalStrategy({
+	usernameField: 'uname',
+	passwordField: 'uname',
+	session: true,
+	passReqToCallback: false,
+}, (username, password, done) => {
+	const guestUser = { username, email: '' };
+	done(null, guestUser);
+}));
 
 module.exports = passport;

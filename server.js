@@ -65,13 +65,16 @@ app.post('/', (req, res) => {
 		body: { code = '' },
 	} = req;
 
+	// store username in cookie
+	res.cookie('user', req.user.username, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
+
 	// Room are 4 digits long
 	if (code.length === 4) {
 		console.log(`valid room code entered: ${code}`);
 		if (code in rooms) {
 			console.log('found an existing room');
 			res.cookie('roomCode', code, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
-			res.render('gamescreen.html');
+			res.render('gamescreen', { user: req.user });
 		} else {
 			console.log('creating new room...');
 			rooms[code] = helpers.createRoom();
@@ -81,7 +84,7 @@ app.post('/', (req, res) => {
 				sameSite: true,
 				maxAge: 1000 * 600,
 			});
-			res.render('gamescreen.html');
+			res.render('gamescreen', { user: req.user });
 		}
 	} else {
 		console.log('Invalid room code');
@@ -182,12 +185,15 @@ io.on('connection', (socket) => {
 	// Parse cookie for room code
 	const code = helpers.getCookie(cookie, 'roomCode');
 
+	// Parse cookie for username
+	const user = decodeURI(helpers.getCookie(cookie, 'user'));
+
 	console.log(`socket id: ${id}, joining room with code: ${code}`);
 	socket.join(code);
-	helpers.addPlayerToRoom(id, rooms, code);
+	helpers.addPlayerToRoom(user, rooms, code);
 
 	// Broadcast when a user connects, update player list
-	io.to(code).emit('serverMessage', `${id} has joined the room`);
+	io.to(code).emit('serverMessage', `${user} has joined the room`);
 	io.to(code).emit('updatePlayer', rooms[code].players);
 
 	// If room has 3+ people and not already started, start the game
@@ -199,7 +205,7 @@ io.on('connection', (socket) => {
 	// listen for chatMessage
 	socket.on('chatMessage', (msg) => {
 		// emit back to clients in same room, replace id with Nickname later
-		io.to(code).emit('chatMessage', `${id}: ${msg}`);
+		io.to(code).emit('chatMessage', `${user}: ${msg}`);
 	});
 
 	socket.on('draw', (data) => {
@@ -226,7 +232,7 @@ io.on('connection', (socket) => {
 
 	socket.on('disconnect', () => {
 		console.log('user disconnected');
-		io.to(code).emit('playerDisconnect', `${id} has left the room`);
+		io.to(code).emit('playerDisconnect', `${user} has left the room`);
 		helpers.removePlayerFromRoom(id, rooms, code, intervalHandles, io);
 	});
 });
