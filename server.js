@@ -59,6 +59,39 @@ app.get('/', (req, res) => {
 	res.render('home', { user: req.user });
 });
 
+// Save drawing
+app.post('/save', (req, res) => {
+	con.query(`INSERT INTO Gallery (email, date, image)
+	VALUES('${req.user.email}', NOW(), '${req.body.url}')`, (err, result) => {
+		if (err) {
+			console.log(err);
+			res.status(500).send(err.sqlMessage);
+		} else {
+			const msg = `Query OK, ${result.affectedRows} affected`;
+			res.status(200).send(msg);
+		}
+	});
+});
+
+// Show drawings on gallery
+app.post('/show', (req, res) => {
+	con.query(`SELECT date, image FROM Gallery WHERE email='${req.user.email}'
+	AND date >= NOW() - INTERVAL 3 DAY`, (err, result) => {
+		if (err) {
+			console.log(err);
+			res.status(500).send(err.sqlMessage);
+		} else {
+			const imgArr = [];
+			for (let i = 0; i < result.length; i += 1) {
+				const { date } = result[i];
+				const img = result[i].image;
+				imgArr.push({ date, url: img });
+			}
+			res.status(200).send(imgArr);
+		}
+	});
+});
+
 // Post request instead of using sockets since we don't need constant updates
 app.post('/', (req, res) => {
 	const {

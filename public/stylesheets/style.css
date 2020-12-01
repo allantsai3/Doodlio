@@ -128,3 +128,14 @@ canvas {
 	position: absolute;
 	bottom: 0;
 }
+
+.panel, .flip {
+  padding: 5px;
+  border: solid 1px black;
+	border-radius: 5px;
+}
+
+.panel {
+  padding: 10px;
+  display: none;
+}
