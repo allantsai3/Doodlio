@@ -38,7 +38,6 @@ body {
 }
 
 .player-list {
-	/* border: solid 2px orange; */
 	list-style: none;
 	width: 250px;
 	display: block;
@@ -56,7 +55,6 @@ body {
 }
 
 .game-canvas {
-	/* border: solid 2px red; */
 	background-color: #d8dee9;
 	margin: 0 auto;
 	padding: 1em;
@@ -114,7 +112,6 @@ canvas {
 }
 
 .chat-container {
-	/* border: solid 2px blue; */
 	background: aliceblue;
 	position: relative;
 	height: 100%;
