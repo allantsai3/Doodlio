@@ -11,6 +11,10 @@ const fill = document.getElementById('fill');
 const brushIndicator = document.getElementById('brush-indicator');
 const brush = document.getElementById('brush');
 
+const inkBar = document.getElementById('ink-bar');
+const totalInk = 3000;
+let currentInk = 0;
+
 let timeInterval; // id for turn timer
 let pickTimer; // id for timer for picking a word
 
@@ -22,6 +26,7 @@ let currX = 0;
 let currY = 0;
 
 let canDraw = false;
+let hasInk = true;
 // Temporary feature for development
 let forceDraw = false;
 
@@ -57,6 +62,20 @@ function changeBrushSize(thickness) {
 	}
 }
 
+function updateInkProgress() {
+	let percentage = 100 - Math.round((currentInk / totalInk) * 100);
+
+	if (percentage <= 0) {
+		percentage = 0;
+		hasInk = false;
+	}
+
+	// inkBar.innerHTML = `${percentage}%`;
+	// inkBar.style.width = `${percentage}%`;
+	// inkBar.ariaValuenow = percentage;
+	socket.emit('updateInk', percentage);
+}
+
 function draw() {
 	ctx.beginPath();
 	ctx.strokeStyle = penColor;
@@ -83,6 +102,10 @@ function draw() {
 
 function GetPos(type, event) {
 	if (canDraw || forceDraw) {
+		if (hasInk === false) {
+			return;
+		}
+
 		if (type === 'down') {
 			prevX = currX;
 			prevY = currY;
@@ -125,7 +148,9 @@ function GetPos(type, event) {
 				prevY = currY;
 				currX = event.pageX - canvas.offsetLeft;
 				currY = event.pageY - canvas.offsetTop;
+				currentInk = currentInk + Math.abs(currX - prevX) + Math.abs(currY - prevY);
 				draw();
+				updateInkProgress();
 			}
 		}
 	}
@@ -197,6 +222,12 @@ socket.on('fill', (color) => {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 });
 
+socket.on('updateInk', (percentage) => {
+	inkBar.innerHTML = `${percentage}%`;
+	inkBar.style.width = `${percentage}%`;
+	inkBar.ariaValuenow = percentage;
+});
+
 socket.on('gamestate', (data) => {
 	canDraw = (socket.id === data.currentDrawingPlayer);
 	$('#currentDrawingPlayer').text(data.currentDrawingPlayer);
@@ -210,6 +241,9 @@ socket.on('turntimer', (time) => {
 	if (timeInterval != null) {
 		window.clearInterval(timeInterval);
 		socket.emit('clear');
+		socket.emit('updateInk', 100);
+		currentInk = 0;
+		hasInk = true;
 	}
 	document.getElementById('gameTimer').innerHTML = time;
 	timeInterval = window.setInterval(() => {
