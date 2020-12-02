@@ -250,7 +250,7 @@ io.on('connection', (socket) => {
 	// listen for chatMessage
 	socket.on('chatMessage', (msg) => {
 		// emit back to clients in same room, replace id with Nickname later
-		io.to(code).emit('chatMessage', `${id}: ${msg}`);
+		io.to(code).emit('chatMessage', `${user}: ${msg}`);
 	});
 
 	socket.on('draw', (data) => {
@@ -291,7 +291,7 @@ io.on('connection', (socket) => {
 
 	socket.on('disconnect', () => {
 		console.log('user disconnected');
-		io.to(code).emit('playerDisconnect', `${id} has left the room`);
+		io.to(code).emit('playerDisconnect', `${user} has left the room`);
 		helpers.removePlayerFromRoom(id, rooms, code, intervalHandles, io);
 	});
 });
