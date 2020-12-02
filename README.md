@@ -68,6 +68,3 @@ If you can't connect to the database, the Cloud SQL instance might be off. Follo
 2. In the Navigation menu on the left, scroll down to the Databases section and click on "SQL"
 3. Click "doodliodata" under Instance ID in the instances table
 At the top of the screen are various buttons, one of which is a Start/Stop button. If the instance is off, click "Start" to turn the instance on to be able to access the database. **Make sure to turn it back off once you are done.**
-
-
-
