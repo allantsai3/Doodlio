@@ -179,7 +179,7 @@ clear.addEventListener('click', () => {
 	clearBoard();
 });
 eraser.addEventListener('click', () => {
-	changeBrushColor('white', true);
+	changeBrushColor('#d8dee9', true);
 });
 fill.addEventListener('click', () => {
 	fillBoard();

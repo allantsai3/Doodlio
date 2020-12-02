@@ -40,6 +40,7 @@ function changeDrawingPlayer(rooms, code, io) {
 		room.currentlyDrawingIndex = 0;
 	}
 
+	room.currentDrawingState = {};
 	room.currentlyDrawing = room.players[room.currentlyDrawingIndex];
 	io.to(code).emit('gamestate', { currentDrawingPlayer: room.currentlyDrawing });
 }
@@ -94,6 +95,7 @@ function createRoom() {
 		currentlyDrawingIndex: -1,
 		currentWordToDraw: '',
 		currentDrawingState: {},
+		turnTimer: 60,
 	};
 	return room;
 }
@@ -126,7 +128,7 @@ function removePlayerFromRoom(id, rooms, code, intervalHandles, io) {
 		room.playerCount -= 1;
 		const index = rooms[code].players.map((player) => player.id).indexOf(id);
 		rooms[code].players.splice(index, 1);
-		io.to(code).emit('updatePlayer', rooms[code].players.map((player) => player.id));
+		io.to(code).emit('updatePlayer', rooms[code].players.map((player) => player.username));
 	}
 	logActivity(rooms, code);
 }
@@ -157,29 +159,23 @@ function storeData(data, rooms, code) {
 	// Initialize the array if it doesn't exist
 	if (!Object.prototype.hasOwnProperty.call(rooms[code].currentDrawingState, penColor)) {
 		// eslint-disable-next-line no-param-reassign
-		rooms[code].currentDrawingState = {
-			[penColor]: {
-				[penCap]: {
-					[penThickness]: [],
-				},
-			},
-		};
-	} else if (!Object.prototype.hasOwnProperty.call(
-		rooms[code].currentDrawingState[penColor], penCap,
-	)) {
-		// eslint-disable-next-line no-param-reassign
 		rooms[code].currentDrawingState[penColor] = {
 			[penCap]: {
 				[penThickness]: [],
 			},
 		};
 	} else if (!Object.prototype.hasOwnProperty.call(
-		rooms[code].currentDrawingState[penColor][penCap], penThickness,
+		rooms[code].currentDrawingState[penColor], penCap,
 	)) {
 		// eslint-disable-next-line no-param-reassign
 		rooms[code].currentDrawingState[penColor][penCap] = {
 			[penThickness]: [],
 		};
+	} else if (!Object.prototype.hasOwnProperty.call(
+		rooms[code].currentDrawingState[penColor][penCap], penThickness,
+	)) {
+		// eslint-disable-next-line no-param-reassign
+		rooms[code].currentDrawingState[penColor][penCap][penThickness] = [];
 	}
 
 	rooms[code].currentDrawingState[penColor][penCap][penThickness]

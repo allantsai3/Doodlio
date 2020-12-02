@@ -52,8 +52,6 @@ app.use('/auth', require('./routes/auth'));
 const rooms = {};
 const intervalHandles = {};
 
-const turnTime = 5000;
-
 // Define paths
 app.get('/', (req, res) => {
 	res.render('home', { user: req.user });
@@ -229,6 +227,7 @@ io.on('connection', (socket) => {
 			},
 			started: isStarted,
 		} = rooms[code];
+		console.log(data);
 		// Check if the current user can draw
 		if (id === currentDrawingId && isStarted) {
 			io.to(code).emit('draw', data);
@@ -246,8 +245,11 @@ io.on('connection', (socket) => {
 
 	// Once the drawer picks a word, start the turn
 	socket.on('wordPicked', (word) => {
+		const {
+			turnTimer,
+		} = rooms[code];
 		rooms[code].currentWordToDraw = word;
-		intervalHandles[code] = helpers.startTurn(turnTime, rooms, code, io, wordBank);
+		intervalHandles[code] = helpers.startTurn(turnTimer * 1000, rooms, code, io, wordBank);
 	});
 
 	socket.on('disconnect', () => {
