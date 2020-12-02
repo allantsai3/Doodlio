@@ -220,13 +220,14 @@ io.on('connection', (socket) => {
 
 	// Parse cookie for username
 	const user = decodeURI(helpers.getCookie(cookie, 'user'));
+	console.log(user);
 
-	console.log(`socket id: ${user}, joining room with code: ${code}`);
+	console.log(`socket id: ${id}, joining room with code: ${code}`);
 	socket.join(code);
 	helpers.addPlayerToRoom(id, rooms, code);
 
 	// Broadcast when a user connects, update player list
-	io.to(code).emit('serverMessage', `${user} has joined the room`);
+	io.to(code).emit('serverMessage', `${id} has joined the room`);
 	io.to(code).emit('updatePlayer', rooms[code].players);
 
 	// If room has 3+ people and not already started, start the game
@@ -238,7 +239,7 @@ io.on('connection', (socket) => {
 	// listen for chatMessage
 	socket.on('chatMessage', (msg) => {
 		// emit back to clients in same room, replace id with Nickname later
-		io.to(code).emit('chatMessage', `${user}: ${msg}`);
+		io.to(code).emit('chatMessage', `${id}: ${msg}`);
 	});
 
 	socket.on('draw', (data) => {
@@ -265,7 +266,7 @@ io.on('connection', (socket) => {
 
 	socket.on('disconnect', () => {
 		console.log('user disconnected');
-		io.to(code).emit('playerDisconnect', `${user} has left the room`);
+		io.to(code).emit('playerDisconnect', `${id} has left the room`);
 		helpers.removePlayerFromRoom(id, rooms, code, intervalHandles, io);
 	});
 });

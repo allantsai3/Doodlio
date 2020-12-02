@@ -178,7 +178,7 @@ brush.addEventListener('click', () => {
 	changeBrushColor(brushIndicator.style.backgroundColor, false);
 });
 // for gallery
-if (saveBtn !== null){
+if (saveBtn !== null) {
 	saveBtn.addEventListener('click', () => {
 		const image = canvas.toDataURL('image/png');
 		$.ajax({
