@@ -32,9 +32,12 @@ showBtn.addEventListener('click', () => {
 				img.setAttribute('height', '300');
 				img.setAttribute('style', 'border:1px solid black;');
 
-				const btn = document.createElement('button');
+				const btn = document.createElement('a');
 				btn.setAttribute('class', 'btn btn-primary');
+				btn.setAttribute('href', urls[i].url);
 				btn.setAttribute('style', 'margin-top:10px;');
+				btn.setAttribute('download', rawDate);
+				btn.setAttribute('role', 'button');
 				btn.textContent = 'Download';
 
 				panel.appendChild(img);

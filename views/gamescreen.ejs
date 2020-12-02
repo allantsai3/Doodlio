@@ -79,8 +79,7 @@
 					Timer: <span id="gameTimer">__</span>
 				</div>
 				<!-- save button -->
-				<% if(user.guest) {%>
-				<% } else { %>
+				<% if(!user.guest) { %>
 					<div style="float:right; margin:-30px 20px 5px 0px;">
 						<button class="btn btn-info" id="saveBtn">Save</button>
 					</div>

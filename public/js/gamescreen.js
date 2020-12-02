@@ -178,16 +178,18 @@ brush.addEventListener('click', () => {
 	changeBrushColor(brushIndicator.style.backgroundColor, false);
 });
 // for gallery
-saveBtn.addEventListener('click', () => {
-	const image = canvas.toDataURL('image/png');
-	$.ajax({
-		type: 'POST',
-		url: '/save',
-		data: JSON.stringify({ url: image }),
-		contentType: 'application/json',
-		processData: false,
+if (saveBtn !== null){
+	saveBtn.addEventListener('click', () => {
+		const image = canvas.toDataURL('image/png');
+		$.ajax({
+			type: 'POST',
+			url: '/save',
+			data: JSON.stringify({ url: image }),
+			contentType: 'application/json',
+			processData: false,
+		});
 	});
-});
+}
 
 socket.on('draw', (data) => {
 	ctx.beginPath();
