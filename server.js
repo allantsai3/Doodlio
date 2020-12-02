@@ -221,9 +221,9 @@ io.on('connection', (socket) => {
 	// Parse cookie for username
 	const user = decodeURI(helpers.getCookie(cookie, 'user'));
 
-	console.log(`socket id: ${id}, joining room with code: ${code}`);
+	console.log(`socket id: ${user}, joining room with code: ${code}`);
 	socket.join(code);
-	helpers.addPlayerToRoom(user, rooms, code);
+	helpers.addPlayerToRoom(id, rooms, code);
 
 	// Broadcast when a user connects, update player list
 	io.to(code).emit('serverMessage', `${user} has joined the room`);
