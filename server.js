@@ -52,8 +52,6 @@ app.use('/auth', require('./routes/auth'));
 const rooms = {};
 const intervalHandles = {};
 
-const turnTime = 5000;
-
 // Define paths
 app.get('/', (req, res) => {
 	res.render('home', { user: req.user });
@@ -96,10 +94,13 @@ app.post('/show', (req, res) => {
 app.post('/', (req, res) => {
 	const {
 		body: { code = '' },
+		user: { username },
 	} = req;
 
 	// store username in cookie
-	res.cookie('user', req.user.username, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
+	if (username) {
+		res.cookie('user', username, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
+	}
 
 	// Room are 4 digits long
 	if (code.length === 4) {
@@ -107,7 +108,7 @@ app.post('/', (req, res) => {
 		if (code in rooms) {
 			console.log('found an existing room');
 			res.cookie('roomCode', code, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
-			res.render('gamescreen', { user: req.user });
+			res.render('gamescreen', { user: req.user, privilege: 'player' });
 		} else {
 			console.log('creating new room...');
 			rooms[code] = helpers.createRoom();
@@ -117,7 +118,7 @@ app.post('/', (req, res) => {
 				sameSite: true,
 				maxAge: 1000 * 600,
 			});
-			res.render('gamescreen', { user: req.user });
+			res.render('gamescreen', { user: req.user, privilege: 'admin' });
 		}
 	} else {
 		console.log('Invalid room code');
@@ -224,17 +225,28 @@ io.on('connection', (socket) => {
 
 	console.log(`socket id: ${id}, joining room with code: ${code}`);
 	socket.join(code);
-	helpers.addPlayerToRoom(id, rooms, code);
+	helpers.addPlayerToRoom(id, user, rooms, code);
+
+	// Update joining player with current game progress
+	socket.emit('drawArr', rooms[code].currentDrawingState);
 
 	// Broadcast when a user connects, update player list
-	io.to(code).emit('serverMessage', `${id} has joined the room`);
-	io.to(code).emit('updatePlayer', rooms[code].players);
+	io.to(code).emit('serverMessage', `${user} has joined the room`);
+	io.to(code).emit('updatePlayer', rooms[code].players.map((player) => player.username));
 
-	// If room has 3+ people and not already started, start the game
-	if (rooms[code].playerCount >= 3 && rooms[code].started === false) {
-		rooms[code].started = true;
-		helpers.startGame(rooms, code, io, wordBank);
-	}
+	socket.on('gameOptions', (msg) => {
+		switch (msg) {
+		case 'startGame':
+			if (rooms[code].started === false) {
+				rooms[code].started = true;
+				helpers.startGame(rooms, code, io, wordBank);
+			}
+			break;
+		default:
+			console.log('unknown gameoption');
+			break;
+		}
+	});
 
 	// listen for chatMessage
 	socket.on('chatMessage', (msg) => {
@@ -243,25 +255,39 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('draw', (data) => {
+		const {
+			currentlyDrawing: {
+				id: currentDrawingId,
+			},
+			started: isStarted,
+		} = rooms[code];
+		console.log(data);
 		// Check if the current user can draw
-		if (data.forceDraw || (id === rooms[code].currentlyDrawing && rooms[code].started)) {
+		if (id === currentDrawingId && isStarted) {
 			io.to(code).emit('draw', data);
+			helpers.storeData(data, rooms, code);
 		}
 	});
 
 	socket.on('clear', () => {
 		io.to(code).emit('clear');
+		const room = rooms[code];
+		room.currentDrawingState = {};
 	});
 
 	socket.on('fill', (color) => {
 		io.to(code).emit('fill', color);
+		const room = rooms[code];
+		room.currentDrawingState = { fill: color };
 	});
 
 	// Once the drawer picks a word, start the turn
 	socket.on('wordPicked', (word) => {
+		const {
+			turnTimer,
+		} = rooms[code];
 		rooms[code].currentWordToDraw = word;
-		console.log(word);
-		intervalHandles[code] = helpers.startTurn(turnTime, rooms, code, io, wordBank);
+		intervalHandles[code] = helpers.startTurn(turnTimer * 1000, rooms, code, io, wordBank);
 	});
 
 	socket.on('disconnect', () => {

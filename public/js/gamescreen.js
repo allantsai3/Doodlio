@@ -13,6 +13,11 @@ const brush = document.getElementById('brush');
 const saveBtn = document.getElementById('saveBtn');		// for gallery
 let saveTimer;
 
+const chatAutoScroll = document.querySelector('.chat-messages');
+// const rect = canvas.getBoundingClientRect();
+canvas.width = 540;
+canvas.height = 540;
+
 let timeInterval; // id for turn timer
 let pickTimer; // id for timer for picking a word
 
@@ -24,20 +29,28 @@ let currX = 0;
 let currY = 0;
 
 let canDraw = false;
-// Temporary feature for development
-let forceDraw = false;
 
 // eslint-disable-next-line no-undef
 const socket = io();
 
-$('#forceDrawing').click(() => {
-	forceDraw = !forceDraw;
-	console.log(`canDraw: ${forceDraw}`);
+$('#startGame').click(() => {
+	socket.emit('gameOptions', 'startGame');
 });
 
 // Drawing functions
+function drawTemp(color, cap, thickness, data) {
+	ctx.beginPath();
+	ctx.strokeStyle = color;
+	ctx.lineWidth = thickness;
+	ctx.lineCap = cap;
+	ctx.moveTo(data.prevX, data.prevY);
+	ctx.lineTo(data.currX, data.currY);
+	ctx.stroke();
+	ctx.closePath();
+}
+
 function changeBrushColor(color, eraserBool) {
-	if (canDraw || forceDraw) {
+	if (canDraw) {
 		penColor = color;
 		if (!eraserBool) {
 			brushIndicator.style.backgroundColor = color;
@@ -46,7 +59,7 @@ function changeBrushColor(color, eraserBool) {
 }
 
 function changeBrushSize(thickness) {
-	if (canDraw || forceDraw) {
+	if (canDraw) {
 		if (thickness === 'smallest') {
 			penThickness = 5;
 		} if (thickness === 'small') {
@@ -77,14 +90,13 @@ function draw() {
 		prevY,
 		currX,
 		currY,
-		forceDraw,
 	};
 
 	socket.emit('draw', data);
 }
 
 function GetPos(type, event) {
-	if (canDraw || forceDraw) {
+	if (canDraw) {
 		if (type === 'down') {
 			prevX = currX;
 			prevY = currY;
@@ -134,14 +146,14 @@ function GetPos(type, event) {
 }
 
 function clearBoard() {
-	if (canDraw || forceDraw) {
+	if (canDraw) {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		socket.emit('clear');
 	}
 }
 
 function fillBoard() {
-	if (canDraw || forceDraw) {
+	if (canDraw) {
 		ctx.fillStyle = brushIndicator.style.backgroundColor;
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		socket.emit('fill', brushIndicator.style.backgroundColor);
@@ -170,7 +182,7 @@ clear.addEventListener('click', () => {
 	clearBoard();
 });
 eraser.addEventListener('click', () => {
-	changeBrushColor('white', true);
+	changeBrushColor('#d8dee9', true);
 });
 fill.addEventListener('click', () => {
 	fillBoard();
@@ -225,6 +237,32 @@ socket.on('draw', (data) => {
 	ctx.closePath();
 });
 
+socket.on('drawArr', (dataObj) => {
+	Object.keys(dataObj).forEach((Colorkey) => {
+		// Set background color
+		if (Colorkey === 'fill') {
+			ctx.fillStyle = dataObj[Colorkey];
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+		} else {
+			Object.keys(dataObj[Colorkey]).forEach((Pencapkey) => {
+				Object.keys(dataObj[Colorkey][Pencapkey]).forEach((PenThicknesskey) => {
+					const {
+						[Colorkey]: {
+							[Pencapkey]: {
+								[PenThicknesskey]: dataArr,
+							},
+						},
+					} = dataObj;
+
+					dataArr.forEach((data) => {
+						drawTemp(Colorkey, Pencapkey, PenThicknesskey, data);
+					});
+				});
+			});
+		}
+	});
+});
+
 socket.on('clear', () => {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
@@ -235,8 +273,14 @@ socket.on('fill', (color) => {
 });
 
 socket.on('gamestate', (data) => {
-	canDraw = (socket.id === data.currentDrawingPlayer);
-	$('#currentDrawingPlayer').text(data.currentDrawingPlayer);
+	const {
+		currentDrawingPlayer: {
+			id,
+			username,
+		},
+	} = data;
+	canDraw = (socket.id === id);
+	$('#currentDrawingPlayer').text(username);
 });
 
 socket.on('wordPrompt', (word) => {
@@ -251,7 +295,6 @@ socket.on('turntimer', (time) => {
 	document.getElementById('gameTimer').innerHTML = time;
 	timeInterval = window.setInterval(() => {
 		let timeLeft = parseInt(document.getElementById('gameTimer').innerHTML, 10);
-		// console.log(timeLeft);
 		timeLeft -= 1;
 		document.getElementById('gameTimer').innerHTML = timeLeft;
 		if (timeLeft <= 0) window.clearInterval(timeInterval);
@@ -266,7 +309,6 @@ function pickWord(n) {
 	const chosenWord = document.getElementById(`word${n}`).innerHTML;
 	$('#wordModal').modal('hide');
 	socket.emit('wordPicked', chosenWord);
-	console.log(chosenWord);
 }
 
 socket.on('wordModal', (words) => {
@@ -277,7 +319,6 @@ socket.on('wordModal', (words) => {
 	$('#wordModal').modal({ backdrop: 'static', keyboard: false });
 	pickTimer = window.setInterval(() => {
 		let timeLeft = parseInt(document.getElementById('pickWordTimer').innerHTML, 10);
-		// console.log(timeLeft);
 		timeLeft -= 1;
 		document.getElementById('pickWordTimer').innerHTML = timeLeft;
 		if (timeLeft <= 0) {
@@ -288,7 +329,6 @@ socket.on('wordModal', (words) => {
 
 // Chat functions
 $('#chat-form').submit((e) => {
-	console.log('submitting form');
 	if ($('#chat-input').val().trim() === '') {
 		return false;
 	}
@@ -304,21 +344,23 @@ $('#chat-form').submit((e) => {
 // Update Chat DOM
 socket.on('chatMessage', (msg) => {
 	$('#messages').append($('<li>').text(msg));
+	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
 });
 
 socket.on('serverMessage', (msg) => {
 	$('#messages').append($('<li>').text(`${msg}`).css('color', 'grey'));
+	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
 });
 
 socket.on('playerDisconnect', (msg) => {
 	$('#messages').append($('<li>').text(`${msg}`).css('color', 'red'));
+	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
 });
 
 // Update Player List DOM of individual room
 socket.on('updatePlayer', (playerList) => {
 	$('#playerList').text('');
 	playerList.forEach((user) => {
-		// $('#playerList').append($('<li>').attr('class', 'list-group-item').text(`${user}`));
 		$('#playerList').append($('<li>').text(`${user}`));
 	});
 });

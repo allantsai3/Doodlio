@@ -4,6 +4,7 @@ html {
 
 body {
 	background-color: #3B4252;
+	min-width: 600px;
 }
 
 .navbar {
@@ -30,23 +31,21 @@ body {
 
 .game-container {
 	background-color: #d8dee9;
-	margin: 150px auto 0px;
+	margin: 150px auto 2em;
 	border-radius: 10px;
 	padding: 1em;
-	width: 1100px;
-	max-height: 700px;
+	min-width: 610px;
 }
 
 .player-list {
 	list-style: none;
-	min-width: 240px;
-	max-width: 250px;
+	width: 250px;
 	display: block;
 	overflow-y: auto;
 }
 
 .player-list li {
-	background-color:aliceblue;
+	background-color: aliceblue;
 	border: solid 1px#5E81AC;
 	font-weight: bold;
 	margin-bottom: 5px;
@@ -57,18 +56,19 @@ body {
 
 .game-canvas {
 	background-color: #d8dee9;
-	/* margin: 1em; */
+	margin: 0 auto;
 	padding: 1em;
 }
 
 canvas {
 	padding: 0;
-	margin: auto;
+	margin: 1em auto;
 	display: block;
+	border: 1px solid black;
 }
 
 .features-div {
-	width: 580px;
+	width: 575px;
 	display: flex;
 }
 
@@ -112,23 +112,54 @@ canvas {
 }
 
 .chat-container {
-	background:aliceblue;
+	background: aliceblue;
 	position: relative;
+	height: 100%;
+	border-radius: 5px;
 }
 
 .chat-messages {
-	max-height: 630px;
-	width:250px;
+	height: calc(100% - 38px);
+	max-height: 666px;
+	min-width: 250px;
 	overflow-wrap: break-word;
 	padding: 1em;
 }
 
 .chat-container #chat-form {
-	min-width: 100%;
+	width: 100%;
 	position: absolute;
 	bottom: 0;
 }
 
+@media (min-width: 1200px) {
+	.container {
+		max-width: 1170px;
+	}
+}
+
+@media only screen and (max-width: 1200px) {
+	.player-list-col {
+		display: none;
+	}
+}
+
+@media only screen and (max-width: 992px) {
+	.player-list-col {
+		display: none;
+	}
+	.chat-container {
+		max-width: 575px;
+		position: relative;
+		margin: 0 auto;
+	}
+	.chat-messages {
+		height: calc(100% - 38px);
+		max-height: 250px;
+		min-width: 250px;
+		overflow-wrap: break-word;
+	}
+}
 .panel, .flip {
   padding: 5px;
   border: solid 1px black;
