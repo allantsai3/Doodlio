@@ -64,7 +64,7 @@ body {
 
 canvas {
 	padding: 0;
-	margin: auto;
+	margin: 1em auto;
 	display: block;
 	border: 1px solid black;
 }
@@ -118,6 +118,7 @@ canvas {
 	background: aliceblue;
 	position: relative;
 	height: 100%;
+	border-radius: 5px;
 }
 
 .chat-messages {
@@ -136,7 +137,7 @@ canvas {
 
 @media (min-width: 1200px) {
 	.container {
-		max-width: 1180px;
+		max-width: 1170px;
 	}
 }
 
