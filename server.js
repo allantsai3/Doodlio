@@ -221,7 +221,6 @@ io.on('connection', (socket) => {
 
 	// Parse cookie for username
 	const user = decodeURI(helpers.getCookie(cookie, 'user'));
-	console.log(user);
 
 	console.log(`socket id: ${id}, joining room with code: ${code}`);
 	socket.join(code);

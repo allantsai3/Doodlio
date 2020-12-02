@@ -99,7 +99,7 @@ function createRoom() {
 		currentlyDrawingIndex: -1,
 		currentWordToDraw: '',
 		currentDrawingState: {},
-		turnTimer: 10,
+		turnTimer: 60,
 	};
 	return room;
 }
