@@ -20,17 +20,20 @@ router.get('/google/callback',
 	passport.authenticate('google'), authSuccess);
 
 router.post('/', (req, res) => {
-	req.user.username = req.body.uname;
-
-	const con = db.connectDB();
-	con.query(`UPDATE User SET username='${req.user.username}' WHERE email='${req.user.email}'`, (err, result) => {
-		if (err) {
-			console.log(err);
-		} else {
-			res.status(result);
-			res.redirect('/');
-		}
-	});
+	if (req.body.uname !== '') {
+		req.user.username = req.body.uname;
+		const con = db.connectDB();
+		con.query(`UPDATE User SET username='${req.user.username}' WHERE email='${req.user.email}'`, (err, result) => {
+			if (err) {
+				console.log(err);
+			} else {
+				res.status(result);
+				res.redirect('/');
+			}
+		});
+	} else {
+		res.redirect('/');
+	}
 });
 
 let numGuest = 1;

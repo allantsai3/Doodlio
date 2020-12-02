@@ -40,6 +40,10 @@ function changeDrawingPlayer(rooms, code, io) {
 		room.currentlyDrawingIndex = 0;
 	}
 
+	if (room.currentlyDrawing !== '') {
+		io.to(room.currentlyDrawing).emit('save', room.currentlyDrawing);
+	}
+
 	room.currentlyDrawing = room.players[room.currentlyDrawingIndex];
 	io.to(code).emit('gamestate', { currentDrawingPlayer: room.currentlyDrawing });
 }

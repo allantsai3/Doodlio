@@ -11,6 +11,7 @@ const fill = document.getElementById('fill');
 const brushIndicator = document.getElementById('brush-indicator');
 const brush = document.getElementById('brush');
 const saveBtn = document.getElementById('saveBtn');		// for gallery
+let saveTimer;
 
 let timeInterval; // id for turn timer
 let pickTimer; // id for timer for picking a word
@@ -177,9 +178,27 @@ fill.addEventListener('click', () => {
 brush.addEventListener('click', () => {
 	changeBrushColor(brushIndicator.style.backgroundColor, false);
 });
+
 // for gallery
+socket.on('save', () => {
+	if ($('#saveToGallery').length) {
+		let timeLeft = 5;
+		document.getElementById('saveImgTimer').innerHTML = timeLeft;
+		$('#saveToGallery').modal({ backdrop: 'static', keyboard: false });
+		saveTimer = window.setInterval(() => {
+			timeLeft -= 1;
+			document.getElementById('saveImgTimer').innerHTML = timeLeft;
+			if (timeLeft <= 0) {
+				window.clearInterval(saveTimer);
+				$('#saveToGallery').modal('hide');
+			}
+		}, 1000);
+	}
+});
+
 if (saveBtn !== null) {
 	saveBtn.addEventListener('click', () => {
+		$('#saveToGallery').modal('hide');
 		const image = canvas.toDataURL('image/png');
 		$.ajax({
 			type: 'POST',
@@ -188,6 +207,10 @@ if (saveBtn !== null) {
 			contentType: 'application/json',
 			processData: false,
 		});
+	});
+
+	document.getElementById('closeBtn').addEventListener('click', () => {
+		$('#saveToGallery').modal('hide');
 	});
 }
 

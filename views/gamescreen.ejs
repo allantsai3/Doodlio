@@ -46,6 +46,25 @@
 		</div>
 	</div>
 
+	<!-- Modal for gallery -->
+	<% if(!user.guest) { %>
+	<div class="modal fade" id='saveToGallery' role='form' tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<!-- Modal content -->
+			<div class="modal-content">
+				<div class="modal-body" style="text-align: center;">
+					<p>Add your drawing to your Gallery</p>
+					<button class="btn btn-primary" id="saveBtn">Save</button>
+					<button class="btn btn-primary" id="closeBtn">Close</button>
+				</div>
+				<div class="modal-footer">
+					<p id="saveImgTimer"></p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<% } %>
+
 	<!-- Collapsable Navbar -->
 	<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
 		<a class="navbar-brand" href="/">
@@ -78,12 +97,6 @@
 				<div class="game-timer">
 					Timer: <span id="gameTimer">__</span>
 				</div>
-				<!-- save button -->
-				<% if(!user.guest) { %>
-					<div style="float:right; margin:-30px 20px 5px 0px;">
-						<button class="btn btn-info" id="saveBtn">Save</button>
-					</div>
-				<% } %>
 			</div>
 
 			<canvas id="canvas" width="540" height="540"
