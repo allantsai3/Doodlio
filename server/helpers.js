@@ -21,7 +21,7 @@ function logActivity(rooms, code) {
 	} = rooms;
 	console.log('--------------------------------------------');
 	console.log(`Changes happened to room id: ${code} count: ${playerCount}`);
-	console.log(`Rooms: ${JSON.stringify(rooms)}`);
+	console.log(`Rooms: ${Object.keys(rooms).length}`);
 	console.log('--------------------------------------------');
 }
 
@@ -63,9 +63,9 @@ function generateRandomWords(wordBank) {
 function startTurn(time, rooms, code, io, wordBank) {
 	for (let i = 0; i < rooms[code].players.length; i += 1) {
 		if (rooms[code].players[i] === rooms[code].currentlyDrawing) {
-			io.to(rooms[code].players[i]).emit('wordPrompt', `You are drawing: ${rooms[code].currentWordToDraw}`);
+			io.to(rooms[code].players[i].id).emit('wordPrompt', `You are drawing: ${rooms[code].currentWordToDraw}`);
 		} else {
-			io.to(rooms[code].players[i]).emit('wordPrompt', `Guess what's being drawn: ${rooms[code].currentWordToDraw.replace(/[a-z]/gi, '\xa0_').replace(/ /g, '\xa0\xa0').replace(/-/g, '\xa0-')}`);
+			io.to(rooms[code].players[i].id).emit('wordPrompt', `Guess what's being drawn: ${rooms[code].currentWordToDraw.replace(/[a-z]/gi, '\xa0_').replace(/ /g, '\xa0\xa0').replace(/-/g, '\xa0-')}`);
 		}
 	}
 	io.to(code).emit('turntimer', time / 1000);
@@ -74,7 +74,7 @@ function startTurn(time, rooms, code, io, wordBank) {
 	return setTimeout(() => {
 		io.to(code).emit('wordPrompt', `The word was: ${rooms[code].currentWordToDraw}`);
 		changeDrawingPlayer(rooms, code, io);
-		io.to(rooms[code].currentlyDrawing).emit('wordModal', generateRandomWords(wordBank));
+		io.to(rooms[code].currentlyDrawing.id).emit('wordModal', generateRandomWords(wordBank));
 	}, time);
 }
 
@@ -82,7 +82,7 @@ function startGame(rooms, code, io, wordBank) {
 	// Execute player change immediately
 	changeDrawingPlayer(rooms, code, io);
 	// Wait for drawer to pick one of three words
-	io.to(rooms[code].currentlyDrawing).emit('wordModal', generateRandomWords(wordBank));
+	io.to(rooms[code].currentlyDrawing.id).emit('wordModal', generateRandomWords(wordBank));
 }
 
 function createRoom() {
@@ -93,11 +93,12 @@ function createRoom() {
 		currentlyDrawing: '',
 		currentlyDrawingIndex: -1,
 		currentWordToDraw: '',
+		currentDrawingState: {},
 	};
 	return room;
 }
 
-function addPlayerToRoom(id, rooms, code) {
+function addPlayerToRoom(id, user, rooms, code) {
 	if (typeof rooms[code] === 'undefined') {
 		// Can't find room (most likely due to server restart)
 		// eslint-disable-next-line no-param-reassign
@@ -107,7 +108,7 @@ function addPlayerToRoom(id, rooms, code) {
 	const room = rooms[code];
 
 	room.playerCount += 1;
-	room.players.push(id);
+	room.players.push({ id, username: user });
 	logActivity(rooms, code);
 }
 
@@ -123,11 +124,68 @@ function removePlayerFromRoom(id, rooms, code, intervalHandles, io) {
 		delete intervalHandles[code];
 	} else {
 		room.playerCount -= 1;
-		const index = rooms[code].players.indexOf(id);
+		const index = rooms[code].players.map((player) => player.id).indexOf(id);
 		rooms[code].players.splice(index, 1);
-		io.to(code).emit('updatePlayer', rooms[code].players);
+		io.to(code).emit('updatePlayer', rooms[code].players.map((player) => player.id));
 	}
 	logActivity(rooms, code);
+}
+
+function storeData(data, rooms, code) {
+	// Creates a data structure in the form of
+	// rooms[code] = {
+	// 		currentDrawingState: {
+	//			penColor: {
+	// 				penCap: {
+	//					penThickness: [
+	// 						{ prev: {X, Y}, curr: {X, Y}}
+	// 					]
+	//				},
+	// 			},
+	// 		},
+	// }
+	const {
+		penColor,
+		penCap,
+		penThickness,
+		prevX,
+		prevY,
+		currX,
+		currY,
+	} = data;
+
+	// Initialize the array if it doesn't exist
+	if (!Object.prototype.hasOwnProperty.call(rooms[code].currentDrawingState, penColor)) {
+		// eslint-disable-next-line no-param-reassign
+		rooms[code].currentDrawingState = {
+			[penColor]: {
+				[penCap]: {
+					[penThickness]: [],
+				},
+			},
+		};
+	} else if (!Object.prototype.hasOwnProperty.call(
+		rooms[code].currentDrawingState[penColor], penCap,
+	)) {
+		// eslint-disable-next-line no-param-reassign
+		rooms[code].currentDrawingState[penColor] = {
+			[penCap]: {
+				[penThickness]: [],
+			},
+		};
+	} else if (!Object.prototype.hasOwnProperty.call(
+		rooms[code].currentDrawingState[penColor][penCap], penThickness,
+	)) {
+		// eslint-disable-next-line no-param-reassign
+		rooms[code].currentDrawingState[penColor][penCap] = {
+			[penThickness]: [],
+		};
+	}
+
+	rooms[code].currentDrawingState[penColor][penCap][penThickness]
+		.push({
+			prevX, prevY, currX, currY,
+		});
 }
 
 module.exports = {
@@ -138,4 +196,5 @@ module.exports = {
 	addPlayerToRoom,
 	removePlayerFromRoom,
 	logActivity,
+	storeData,
 };

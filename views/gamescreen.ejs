@@ -23,7 +23,7 @@
 </head>
 
 <body>
-	<!-- Modal -->
+	<!-- Modal for selecting words -->
 	<div class="modal fade" id='wordModal' role='form' tabindex="-1">
 		<div class="modal-dialog modal-dialog-centered">
 			
@@ -60,6 +60,9 @@
 		<div class="collapse navbar-collapse justify-content-center"
 			id="navbarNav">
 			<ul class="nav navbar-nav ml-auto" id="pills-tab" role="tablist">
+				<% if (privilege === 'admin') { %>
+					<button class="nav-item btn btn-success" id="startGame">Start Game</button>
+				<% } %>
 				<a class="nav-item nav-link" aria-selected="false"><%= user.username %></a>
 				<a class="nav-item nav-link" href="/">Leave Room</a>
 			</ul>
@@ -108,8 +111,6 @@
 					<img id="clear-canvas" src="img/trash.png">
 			</div>
 			<br>
-			<button class="btn btn-success" id="forceDrawing">Force
-				Drawing</button>
 			<span>
 				Currently drawing: <span id="currentDrawingPlayer"></span>
 			</span>
