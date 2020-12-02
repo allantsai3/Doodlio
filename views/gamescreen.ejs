@@ -26,16 +26,19 @@
 	<!-- Modal for selecting words -->
 	<div class="modal fade" id='wordModal' role='form' tabindex="-1">
 		<div class="modal-dialog modal-dialog-centered">
-			
+
 			<!-- Modal content -->
 			<div class="modal-content">
 				<div class="modal-header">
 					<p>Pick one of the words below to draw:</p>
 				</div>
 				<div class="modal-body">
-					<button class="btn btn-primary" onclick="pickWord(0)" id="word0">word1</button>
-					<button class="btn btn-primary" onclick="pickWord(1)" id="word1">word2</button>
-					<button class="btn btn-primary" onclick="pickWord(2)" id="word2">word3</button>
+					<button class="btn btn-primary" onclick="pickWord(0)"
+						id="word0">word1</button>
+					<button class="btn btn-primary" onclick="pickWord(1)"
+						id="word1">word2</button>
+					<button class="btn btn-primary" onclick="pickWord(2)"
+						id="word2">word3</button>
 				</div>
 				<div class="modal-footer">
 					<p id="pickWordTimer"></p>
@@ -53,79 +56,83 @@
 				class="d-inline-block align-top" alt="Doodl.io Logo">
 			Doodl.io</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse"
-			data-target="#navbarNav" aria-controls="navbarNav"
-			aria-expanded="false" aria-label="Toggle navigation">
+			data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+			aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
-		<div class="collapse navbar-collapse justify-content-center"
-			id="navbarNav">
+		<div class="collapse navbar-collapse justify-content-center" id="navbarNav">
 			<ul class="nav navbar-nav ml-auto" id="pills-tab" role="tablist">
 				<% if (privilege === 'admin') { %>
-					<button class="nav-item btn btn-success" id="startGame">Start Game</button>
+				<button class="nav-item btn btn-success" id="startGame">Start
+					Game</button>
 				<% } %>
-				<a class="nav-item nav-link" aria-selected="false"><%= user.username %></a>
+				<a class="nav-item nav-link"
+					aria-selected="false"><%= user.username %></a>
 				<a class="nav-item nav-link" href="/">Leave Room</a>
 			</ul>
 		</div>
 	</nav>
 
-	<div class="game-container d-flex">
-		<!-- Player List -->
-		<div class="player-list text-truncate" id="playerList">
-		</div>
-		<!-- Canvas -->
-		<div class="game-canvas">
-			<span id="word"></span>
-			<div class="game-setting">
-				<div class="game-timer">
-					Timer: <span id="gameTimer">__</span>
+	<div class="container game-container d-flex">
+		<div class="row">
+			<!-- Player List -->
+			<div class="col player-list-col">
+				<div class="player-list text-truncate" id="playerList">
 				</div>
 			</div>
-			<canvas id="canvas" width="540" height="540"
-				style="border: 1px solid black">
-				Your browser does not support the HTML 5 Canvas.
-			</canvas>
-			<br>
-			<div class="features-div">
+			<!-- Canvas -->
+			<div class="game-canvas">
+				<span>
+					Currently drawing: <span id="currentDrawingPlayer"></span>
+				</span>
+				<br>
+				<span id="word"></span>
+				<div class="game-setting">
+					<div class="game-timer">
+						Timer: <span id="gameTimer">__</span>
+					</div>
+				</div>
+				<canvas id="canvas">
+					Your browser does not support the HTML 5 Canvas.
+				</canvas>
+				<div class="features-div mt-2">
 					<img id="brush-indicator" style="background:black;">
 					<div class="brush-colors-div">
 						<img class="brush-colors" id="white" style="background:white;">
-						<img class="brush-colors" id="grey" style="background:grey;">						
+						<img class="brush-colors" id="grey" style="background:grey;">
 						<img class="brush-colors" id="red" style="background:red;">
 						<img class="brush-colors" id="orange" style="background:orange;">
 						<img class="brush-colors" id="yellow" style="background:yellow;">
 						<br>
-						<img class="brush-colors" id="black" style="background:black;">						
+						<img class="brush-colors" id="black" style="background:black;">
 						<img class="brush-colors" id="green" style="background:green;">
 						<img class="brush-colors" id="blue" style="background:blue;">
 						<img class="brush-colors" id="indigo" style="background:indigo;">
-						<img class="brush-colors" id="violet" style="background:violet;">							
+						<img class="brush-colors" id="violet" style="background:violet;">
 					</div>
 					<img class="brush-eraser-fill-imgs" id="brush" src="img/brush.png">
 					<img class="brush-eraser-fill-imgs" id="eraser" src="img/eraser.png">
-					<img class="brush-eraser-fill-imgs" id="fill" src="img/bucket.png">						
+					<img class="brush-eraser-fill-imgs" id="fill" src="img/bucket.png">
 					<img class="brush-sizes-imgs" id="smallest" src="img/smallest.png">
 					<img class="brush-sizes-imgs" id="small" src="img/small.png">
 					<img class="brush-sizes-imgs" id="large" src="img/large.png">
 					<img class="brush-sizes-imgs" id="largest" src="img/largest.png">
 					<img id="clear-canvas" src="img/trash.png">
+				</div>
 			</div>
-			<br>
-			<span>
-				Currently drawing: <span id="currentDrawingPlayer"></span>
-			</span>
-		</div>
-		<!-- Chat -->
-		<div class="chat-container">
-			<div class="chat-messages overflow-auto">
-				<ul class="list-group list-unstyled" id="messages"></ul>
+			<!-- Chat -->
+			<div class="col">
+				<div class="chat-container">
+					<div class="chat-messages overflow-auto">
+						<ul class="list-group list-unstyled" id="messages"></ul>
+					</div>
+					<form id="chat-form">
+						<input class="form-control" type="text" id="chat-input"
+							placeholder="Enter your guess/chat here!" />
+						<!-- <button class="btn btn-dark">Send</button> -->
+					</form>
+				</div>
 			</div>
-			<form id="chat-form">
-				<input class="form-control" type="text" id="chat-input"
-					placeholder="Enter your guess/chat here!" />
-				<!-- <button class="btn btn-dark">Send</button> -->
-			</form>
-
 		</div>
 	</div>
 
