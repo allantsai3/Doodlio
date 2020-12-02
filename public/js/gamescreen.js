@@ -10,6 +10,10 @@ const eraser = document.getElementById('eraser');
 const fill = document.getElementById('fill');
 const brushIndicator = document.getElementById('brush-indicator');
 const brush = document.getElementById('brush');
+const chatAutoScroll = document.querySelector('.chat-messages');
+// const rect = canvas.getBoundingClientRect();
+canvas.width = 540;
+canvas.height = 540;
 
 let timeInterval; // id for turn timer
 let pickTimer; // id for timer for picking a word
@@ -267,14 +271,17 @@ $('#chat-form').submit((e) => {
 // Update Chat DOM
 socket.on('chatMessage', (msg) => {
 	$('#messages').append($('<li>').text(msg));
+	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
 });
 
 socket.on('serverMessage', (msg) => {
 	$('#messages').append($('<li>').text(`${msg}`).css('color', 'grey'));
+	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
 });
 
 socket.on('playerDisconnect', (msg) => {
 	$('#messages').append($('<li>').text(`${msg}`).css('color', 'red'));
+	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
 });
 
 // Update Player List DOM of individual room
