@@ -201,21 +201,27 @@ socket.on('draw', (data) => {
 
 socket.on('drawArr', (dataObj) => {
 	Object.keys(dataObj).forEach((Colorkey) => {
-		Object.keys(dataObj[Colorkey]).forEach((Pencapkey) => {
-			Object.keys(dataObj[Colorkey][Pencapkey]).forEach((PenThicknesskey) => {
-				const {
-					[Colorkey]: {
-						[Pencapkey]: {
-							[PenThicknesskey]: dataArr,
+		// Set background color
+		if (Colorkey === 'fill') {
+			ctx.fillStyle = dataObj[Colorkey];
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+		} else {
+			Object.keys(dataObj[Colorkey]).forEach((Pencapkey) => {
+				Object.keys(dataObj[Colorkey][Pencapkey]).forEach((PenThicknesskey) => {
+					const {
+						[Colorkey]: {
+							[Pencapkey]: {
+								[PenThicknesskey]: dataArr,
+							},
 						},
-					},
-				} = dataObj;
+					} = dataObj;
 
-				dataArr.forEach((data) => {
-					drawTemp(Colorkey, Pencapkey, PenThicknesskey, data);
+					dataArr.forEach((data) => {
+						drawTemp(Colorkey, Pencapkey, PenThicknesskey, data);
+					});
 				});
 			});
-		});
+		}
 	});
 });
 
