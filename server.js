@@ -54,13 +54,21 @@ const intervalHandles = {};
 
 // Define paths
 app.get('/', (req, res) => {
-	res.render('home', { user: req.user });
+	const { code } = req.cookies;
+	res.clearCookie('code');
+
+	if (code) {
+		res.render('home', { user: req.user, code });
+	} else {
+		res.render('home', { user: req.user });
+	}
+	// res.render('home', { user: req.user });
 });
 
 // Save drawing
 app.post('/save', (req, res) => {
-	con.query(`INSERT INTO Gallery (email, date, image)
-	VALUES('${req.user.email}', NOW(), '${req.body.url}')`, (err, result) => {
+	con.query(`INSERT INTO Gallery (email, title, image)
+	VALUES('${req.user.email}', '${req.body.title}', '${req.body.url}')`, (err, result) => {
 		if (err) {
 			console.log(err);
 			res.status(500).send(err.sqlMessage);
@@ -73,25 +81,50 @@ app.post('/save', (req, res) => {
 
 // Show drawings on gallery
 app.post('/show', (req, res) => {
-	con.query(`SELECT date, image FROM Gallery WHERE email='${req.user.email}'
-	AND date >= NOW() - INTERVAL 3 DAY`, (err, result) => {
+	if (typeof req.user !== 'undefined' && req.user) {
+		con.query(`SELECT id, title, image FROM Gallery WHERE email='${req.user.email}'`, (err, result) => {
+			if (err) {
+				console.log(err);
+				res.status(500).send(err.sqlMessage);
+			} else {
+				const imgArr = [];
+				for (let i = 0; i < result.length; i += 1) {
+					const { title } = result[i];
+					const { id } = result[i];
+					const img = result[i].image;
+					imgArr.push({ title, id, url: img });
+				}
+				res.status(200).send(imgArr);
+			}
+		});
+	} else {
+		res.status(200).send();
+	}
+});
+
+// Remove drawing
+app.post('/remove', (req, res) => {
+	con.query(`DELETE FROM Gallery WHERE id='${req.body.id}'`, (err, result) => {
 		if (err) {
 			console.log(err);
 			res.status(500).send(err.sqlMessage);
 		} else {
-			const imgArr = [];
-			for (let i = 0; i < result.length; i += 1) {
-				const { date } = result[i];
-				const img = result[i].image;
-				imgArr.push({ date, url: img });
-			}
-			res.status(200).send(imgArr);
+			res.status(200).send(result);
 		}
 	});
 });
 
 // Post request instead of using sockets since we don't need constant updates
 app.post('/', (req, res) => {
+	if (!req.user) {
+		const {
+			body: { code = '' },
+		} = req;
+		res.cookie('code', code, { httpOnly: true, sameSite: true, maxAge: 1000 * 600 });
+		res.status(200).send(code);
+		return;
+	}
+
 	const {
 		body: { code = '' },
 		user: { username },

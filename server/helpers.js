@@ -41,7 +41,7 @@ function changeDrawingPlayer(rooms, code, io) {
 	}
 
 	if (room.currentlyDrawing.id !== '') {
-		io.to(room.currentlyDrawing.id).emit('save');
+		io.to(room.currentlyDrawing.id).emit('save', room.currentWordToDraw);
 	}
 
 	room.currentDrawingState = {};

@@ -12,6 +12,7 @@ const brushIndicator = document.getElementById('brush-indicator');
 const brush = document.getElementById('brush');
 const saveBtn = document.getElementById('saveBtn');		// for gallery
 let saveTimer;
+let title;
 
 const chatAutoScroll = document.querySelector('.chat-messages');
 const gameOptionsForm = document.getElementById('gameOptionsForm');
@@ -207,9 +208,10 @@ brush.addEventListener('click', () => {
 });
 
 // for gallery
-socket.on('save', () => {
+socket.on('save', (word) => {
+	title = word;
 	if ($('#saveToGallery').length) {
-		let timeLeft = 5;
+		let timeLeft = 10;
 		document.getElementById('saveImgTimer').innerHTML = timeLeft;
 		$('#saveToGallery').modal({ backdrop: 'static', keyboard: false });
 		saveTimer = window.setInterval(() => {
@@ -230,7 +232,7 @@ if (saveBtn !== null) {
 		$.ajax({
 			type: 'POST',
 			url: '/save',
-			data: JSON.stringify({ url: image }),
+			data: JSON.stringify({ url: image, title }),
 			contentType: 'application/json',
 			processData: false,
 		});

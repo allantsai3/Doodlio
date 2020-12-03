@@ -160,7 +160,7 @@ canvas {
 		overflow-wrap: break-word;
 	}
 }
-.panel, .flip {
+/* .panel, .flip {
   padding: 5px;
   border: solid 1px black;
 	border-radius: 5px;
@@ -169,4 +169,4 @@ canvas {
 .panel {
   padding: 10px;
   display: none;
-}
+} */
