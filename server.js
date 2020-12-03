@@ -267,6 +267,10 @@ io.on('connection', (socket) => {
 		room.currentDrawingState = { fill: color };
 	});
 
+	socket.on('updateInk', (percentage) => {
+		io.to(code).emit('updateInk', percentage);
+	});
+
 	// Once the drawer picks a word, start the turn
 	socket.on('wordPicked', (word) => {
 		const {
