@@ -96,6 +96,7 @@ function createRoom() {
 		currentWordToDraw: '',
 		currentDrawingState: {},
 		turnTimer: 60,
+		roundNumber: 3,
 	};
 	return room;
 }
