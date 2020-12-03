@@ -24,13 +24,13 @@
 
 <body>
 	<!-- Modal for selecting words -->
-	<div class="modal fade" id='wordModal' role='form' tabindex="-1">
+	<div class="modal fade" id="wordModal" role="form" tabindex="-1">
 		<div class="modal-dialog modal-dialog-centered">
 
 			<!-- Modal content -->
 			<div class="modal-content">
 				<div class="modal-header">
-					<p>Pick one of the words below to draw:</p>
+					<h5 class="modal-title font-weight-bold">Pick one of the words below to draw:</h5>
 				</div>
 				<div class="modal-body">
 					<button class="btn btn-primary" onclick="pickWord(0)"
@@ -42,6 +42,37 @@
 				</div>
 				<div class="modal-footer">
 					<p id="pickWordTimer"></p>
+				</div>
+			</div>
+
+
+		</div>
+	</div>
+
+	<!-- Modal for game options and starting game -->
+	<div class="modal fade" id="gameOptionsModal" role="form" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			
+			<!-- Modal content -->
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title font-weight-bold">Game Options:</h5>
+				</div>
+				<div class="modal-body">
+					<form class="needs-validation" id="gameOptionsForm">
+						<div class="form-group">
+							<label for="roundTime">Round Time (seconds)</label>
+							<input type="number" class="form-control" id="roundTime" min="1" placeholder="60">
+						</div>
+						<div class="form-group">
+							<label for="numberOfRounds">Number of Rounds</label>
+							<input type="number" class="form-control" id="numberOfRounds" min="1" placeholder="3">
+						</div>
+						<div class="modal-footer form-check">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        					<button type="button" class="btn btn-success" id="startGame">Start Game</button>
+						</div>
+					</form>
 				</div>
 			</div>
 
@@ -63,8 +94,7 @@
 		<div class="collapse navbar-collapse justify-content-center" id="navbarNav">
 			<ul class="nav navbar-nav ml-auto" id="pills-tab" role="tablist">
 				<% if (privilege === 'admin') { %>
-				<button class="nav-item btn btn-success" id="startGame">Start
-					Game</button>
+					<button class="nav-item btn btn-primary" id="gameOptions">Game options</button>
 				<% } %>
 				<a class="nav-item nav-link"
 					aria-selected="false"><%= user.username %></a>
