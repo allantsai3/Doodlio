@@ -35,6 +35,11 @@ let canDraw = false;
 let hasInk = true;
 let eraserBool = false;
 
+const pencilImg = document.createElement('img');
+pencilImg.src = 'img/pencil.png';
+pencilImg.width = 20;
+pencilImg.height = 20;
+
 // eslint-disable-next-line no-undef
 const socket = io();
 
@@ -104,7 +109,7 @@ function updateInkProgress() {
 		percentage = 0;
 		hasInk = false;
 	}
-	
+
 	socket.emit('updateInk', percentage);
 }
 
@@ -362,37 +367,38 @@ $('#chat-form').submit((e) => {
 	return false;
 });
 
-// Update Chat DOM
-socket.on('chatMessage', (msg) => {
-	$('#messages').append($('<li>').text(msg));
-	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
-});
-
-socket.on('guessedWord', (msg) => {
-	$('#messages').append($('<li>').text(`${msg}`).css('color', 'green'));
-	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
-});
-
 socket.on('updateScore', (score) => {
 	document.getElementById('playerScore').innerHTML = score;
 });
 
-socket.on('serverMessage', (msg) => {
-	$('#messages').append($('<li>').text(`${msg}`).css('color', 'grey'));
-	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
-});
+// Update Chat DOM
+socket.on('chatMessage', (msgObj) => {
+	const {
+		msg = '',
+		color = 'black',
+	} = msgObj;
 
-socket.on('playerDisconnect', (msg) => {
-	$('#messages').append($('<li>').text(`${msg}`).css('color', 'red'));
+	$('#messages').append($('<li>').text(`${msg}`).css('color', color));
 	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
 });
 
 // Update Player List DOM of individual room
 socket.on('updatePlayer', (data) => {
+	const {
+		playerList,
+		playerScores,
+		guessedPlayerList,
+		currentDrawer,
+	} = data;
+
 	$('#playerList').text('');
 	let i = 0;
-	data.playerList.forEach((user) => {
-		$('#playerList').append($('<li>').text(`${user}: ${data.playerScores[i]}`));
+	playerList.forEach((player) => {
+		const listElement = $(`<li ${guessedPlayerList.includes(player.id) ? 'style="background-color: #86eb34;"' : ''}>`).text(`${player.username}: ${playerScores[i]}`);
+		if (currentDrawer === player.id) {
+			listElement.append(pencilImg);
+		}
+		$('#playerList').append(listElement);
 		i += 1;
 	});
 });
