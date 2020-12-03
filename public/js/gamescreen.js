@@ -264,11 +264,15 @@ socket.on('wordPrompt', (word) => {
 	$('#word').text(word);
 });
 
+socket.on('stopDrawing', () => {
+	canDraw = false;
+});
+
 socket.on('turntimer', (time) => {
 	if (timeInterval != null) {
 		window.clearInterval(timeInterval);
-		socket.emit('clear');
 	}
+
 	document.getElementById('gameTimer').innerHTML = time;
 	timeInterval = window.setInterval(() => {
 		let timeLeft = parseInt(document.getElementById('gameTimer').innerHTML, 10);
@@ -311,8 +315,10 @@ $('#chat-form').submit((e) => {
 	}
 	// Prevent page from reloading
 	e.preventDefault();
+	let playerScore = document.getElementById('gameTimer').innerHTML;
+	if (playerScore == null) playerScore = 0;
 	// Emit message to server
-	socket.emit('chatMessage', $('#chat-input').val());
+	socket.emit('messageTyped', { msg: $('#chat-input').val(), score: playerScore });
 	// Reset input field
 	$('#chat-form')[0].reset();
 	return false;
@@ -322,6 +328,15 @@ $('#chat-form').submit((e) => {
 socket.on('chatMessage', (msg) => {
 	$('#messages').append($('<li>').text(msg));
 	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
+});
+
+socket.on('guessedWord', (msg) => {
+	$('#messages').append($('<li>').text(`${msg}`).css('color', 'green'));
+	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
+});
+
+socket.on('updateScore', (score) => {
+	document.getElementById('playerScore').innerHTML = score;
 });
 
 socket.on('serverMessage', (msg) => {
@@ -335,9 +350,11 @@ socket.on('playerDisconnect', (msg) => {
 });
 
 // Update Player List DOM of individual room
-socket.on('updatePlayer', (playerList) => {
+socket.on('updatePlayer', (data) => {
 	$('#playerList').text('');
-	playerList.forEach((user) => {
-		$('#playerList').append($('<li>').text(`${user}`));
+	let i = 0;
+	data.playerList.forEach((user) => {
+		$('#playerList').append($('<li>').text(`${user}: ${data.playerScores[i]}`));
+		i += 1;
 	});
 });

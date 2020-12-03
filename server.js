@@ -198,7 +198,7 @@ io.on('connection', (socket) => {
 
 	// Broadcast when a user connects, update player list
 	io.to(code).emit('serverMessage', `${user} has joined the room`);
-	io.to(code).emit('updatePlayer', rooms[code].players.map((player) => player.username));
+	io.to(code).emit('updatePlayer', { playerList: rooms[code].players.map((player) => player.username), playerScores: rooms[code].playerScores });
 
 	socket.on('startGame', (options) => {
 		const {
@@ -215,9 +215,30 @@ io.on('connection', (socket) => {
 	});
 
 	// listen for chatMessage
-	socket.on('chatMessage', (msg) => {
-		// emit back to clients in same room, replace id with Nickname later
-		io.to(code).emit('chatMessage', `${user}: ${msg}`);
+	socket.on('messageTyped', (data) => {
+		const room = rooms[code];
+		if (rooms[code].started === false) {
+			io.to(code).emit('chatMessage', `${user}: ${data.msg}`);
+		} else if (id !== room.currentlyDrawing.id && !room.guessedCorrectly[id] && room.turnStarted) {
+			if (data.msg === room.currentWordToDraw) {
+				room.guessedCorrectly[id] = true;
+				const idIndex = rooms[code].players.map((player) => player.id).indexOf(id);
+				const currentTime = parseFloat(`${data.score}.0`);
+				const totalTime = parseFloat(`${room.turnTimer}.0`);
+				const newScore = (currentTime / totalTime).toFixed(3) * 1000;
+				room.playerScores[idIndex] += newScore;
+				room.numGuessedRight += 1;
+				io.to(code).emit('guessedWord', `${user} guessed the word!`);
+				io.to(id).emit('updateScore', room.playerScores[rooms[code].players.map((player) => player.id).indexOf(id)]); // used to show each player's own score to them, might not be needed
+				io.to(code).emit('updatePlayer', { playerList: rooms[code].players.map((player) => player.username), playerScores: rooms[code].playerScores });
+				if (room.numGuessedRight === room.playerCount - 1) {
+					clearInterval(intervalHandles[code]);
+					helpers.endTurn(5000, rooms, code, io, wordBank);
+				}
+			} else {
+				io.to(code).emit('chatMessage', `${user}: ${data.msg}`);
+			}
+		}
 	});
 
 	socket.on('draw', (data) => {
@@ -252,6 +273,7 @@ io.on('connection', (socket) => {
 			turnTimer,
 		} = rooms[code];
 		rooms[code].currentWordToDraw = word;
+		io.to(code).emit('clear');
 		intervalHandles[code] = helpers.startTurn(turnTimer * 1000, rooms, code, io, wordBank);
 	});
 
