@@ -233,17 +233,17 @@ io.on('connection', (socket) => {
 	io.to(code).emit('serverMessage', `${user} has joined the room`);
 	io.to(code).emit('updatePlayer', rooms[code].players.map((player) => player.username));
 
-	socket.on('gameOptions', (msg) => {
-		switch (msg) {
-		case 'startGame':
-			if (rooms[code].started === false) {
-				rooms[code].started = true;
-				helpers.startGame(rooms, code, io, wordBank);
-			}
-			break;
-		default:
-			console.log('unknown gameoption');
-			break;
+	socket.on('startGame', (options) => {
+		const {
+			roundTime,
+			roundNumber,
+		} = options;
+
+		if (rooms[code].started === false) {
+			rooms[code].started = true;
+			rooms[code].turnTimer = roundTime || 60;
+			rooms[code].roundNumber = roundNumber || 3;
+			helpers.startGame(rooms, code, io, wordBank);
 		}
 	});
 
@@ -260,7 +260,6 @@ io.on('connection', (socket) => {
 			},
 			started: isStarted,
 		} = rooms[code];
-		console.log(data);
 		// Check if the current user can draw
 		if (id === currentDrawingId && isStarted) {
 			io.to(code).emit('draw', data);

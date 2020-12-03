@@ -14,7 +14,9 @@ const saveBtn = document.getElementById('saveBtn');		// for gallery
 let saveTimer;
 
 const chatAutoScroll = document.querySelector('.chat-messages');
-// const rect = canvas.getBoundingClientRect();
+const gameOptionsForm = document.getElementById('gameOptionsForm');
+const roundTime = document.getElementById('roundTime');
+const roundNumber = document.getElementById('numberOfRounds');
 canvas.width = 540;
 canvas.height = 540;
 
@@ -33,8 +35,21 @@ let canDraw = false;
 // eslint-disable-next-line no-undef
 const socket = io();
 
-$('#startGame').click(() => {
-	socket.emit('gameOptions', 'startGame');
+$('#startGame').click((e) => {
+	const roundTimeVal = roundTime.value;
+	const roundNumberVal = roundNumber.value;
+	if (gameOptionsForm.checkValidity() === true) {
+		socket.emit('startGame', { roundTime: roundTimeVal, roundNumber: roundNumberVal });
+		e.preventDefault();
+		e.stopPropagation();
+		$('#gameOptionsModal').modal('hide');
+		// Disable game options button once game starts successfully
+		$('#gameOptions').prop('disabled', true);
+	}
+});
+
+$('#gameOptions').click(() => {
+	$('#gameOptionsModal').modal('toggle');
 });
 
 // Drawing functions
