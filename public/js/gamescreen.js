@@ -17,6 +17,10 @@ const roundNumber = document.getElementById('numberOfRounds');
 canvas.width = 540;
 canvas.height = 540;
 
+const inkBar = document.getElementById('ink-bar');
+const totalInk = 3000;
+let currentInk = 0;
+
 let timeInterval; // id for turn timer
 let pickTimer; // id for timer for picking a word
 
@@ -28,6 +32,8 @@ let currX = 0;
 let currY = 0;
 
 let canDraw = false;
+let hasInk = true;
+let eraserBool = false;
 
 // eslint-disable-next-line no-undef
 const socket = io();
@@ -61,9 +67,16 @@ function drawTemp(color, cap, thickness, data) {
 	ctx.closePath();
 }
 
-function changeBrushColor(color, eraserBool) {
+function changeBrushColor(color) {
 	if (canDraw) {
+		if (color === '#d8dee9') {
+			eraserBool = true;
+		} else {
+			eraserBool = false;
+		}
+
 		penColor = color;
+
 		if (!eraserBool) {
 			brushIndicator.style.backgroundColor = color;
 		}
@@ -82,6 +95,17 @@ function changeBrushSize(thickness) {
 			penThickness = 35;
 		}
 	}
+}
+
+function updateInkProgress() {
+	let percentage = 100 - Math.round((currentInk / totalInk) * 100);
+
+	if (percentage <= 0) {
+		percentage = 0;
+		hasInk = false;
+	}
+	
+	socket.emit('updateInk', percentage);
 }
 
 function draw() {
@@ -108,7 +132,7 @@ function draw() {
 }
 
 function GetPos(type, event) {
-	if (canDraw) {
+	if (canDraw && hasInk) {
 		if (type === 'down') {
 			prevX = currX;
 			prevY = currY;
@@ -151,6 +175,11 @@ function GetPos(type, event) {
 				prevY = currY;
 				currX = event.pageX - canvas.offsetLeft;
 				currY = event.pageY - canvas.offsetTop;
+
+				if (eraserBool === false) {
+					currentInk = currentInk + Math.abs(currX - prevX) + Math.abs(currY - prevY);
+					updateInkProgress();
+				}
 				draw();
 			}
 		}
@@ -185,7 +214,7 @@ canvas.addEventListener('mouseout', (event) => {
 	GetPos('out', event);
 });
 brushColors.forEach((el) => el.addEventListener('click', (event) => {
-	changeBrushColor(event.target.id, false);
+	changeBrushColor(event.target.id);
 }));
 brushSizes.forEach((el) => el.addEventListener('click', (event) => {
 	changeBrushSize(event.target.id);
@@ -194,13 +223,13 @@ clear.addEventListener('click', () => {
 	clearBoard();
 });
 eraser.addEventListener('click', () => {
-	changeBrushColor('#d8dee9', true);
+	changeBrushColor('#d8dee9');
 });
 fill.addEventListener('click', () => {
 	fillBoard();
 });
 brush.addEventListener('click', () => {
-	changeBrushColor(brushIndicator.style.backgroundColor, false);
+	changeBrushColor(brushIndicator.style.backgroundColor);
 });
 
 socket.on('draw', (data) => {
@@ -249,6 +278,12 @@ socket.on('fill', (color) => {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 });
 
+socket.on('updateInk', (percentage) => {
+	inkBar.innerHTML = `${percentage}%`;
+	inkBar.style.width = `${percentage}%`;
+	inkBar.ariaValuenow = percentage;
+});
+
 socket.on('gamestate', (data) => {
 	const {
 		currentDrawingPlayer: {
@@ -289,6 +324,9 @@ function pickWord(n) {
 	}
 	const chosenWord = document.getElementById(`word${n}`).innerHTML;
 	$('#wordModal').modal('hide');
+	socket.emit('updateInk', 100);
+	currentInk = 0;
+	hasInk = true;
 	socket.emit('wordPicked', chosenWord);
 }
 
