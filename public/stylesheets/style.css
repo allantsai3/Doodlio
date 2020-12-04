@@ -134,7 +134,7 @@ canvas {
 
 .chat-messages {
 	height: calc(100% - 38px);
-	max-height: 704px;
+	max-height: 712px;
 	min-width: 250px;
 	display: block;
 	overflow-wrap: break-word;
