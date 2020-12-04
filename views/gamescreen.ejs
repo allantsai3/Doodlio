@@ -75,6 +75,25 @@
 		</div>
 	</div>
 
+	<!-- Modal for gallery -->
+	<% if(!user.guest) { %>
+	<div class="modal fade" id='saveToGallery' role='form' tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<!-- Modal content -->
+			<div class="modal-content">
+				<div class="modal-body" style="text-align: center;">
+					<p>Add your drawing to your Gallery</p>
+					<button class="btn btn-primary" id="saveBtn">Save</button>
+					<button class="btn btn-primary" id="closeBtn">Close</button>
+				</div>
+				<div class="modal-footer">
+					<p id="saveImgTimer"></p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<% } %>
+
 	<!-- Modal for game options and starting game -->
 	<div class="modal fade" id="gameOptionsModal" role="form" tabindex="-1">
 		<div class="modal-dialog modal-dialog-centered">

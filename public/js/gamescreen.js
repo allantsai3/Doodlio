@@ -10,6 +10,10 @@ const eraser = document.getElementById('eraser');
 const fill = document.getElementById('fill');
 const brushIndicator = document.getElementById('brush-indicator');
 const brush = document.getElementById('brush');
+const saveBtn = document.getElementById('saveBtn');		// for gallery
+let saveTimer;
+let title;
+
 const chatAutoScroll = document.querySelector('.chat-messages');
 const gameOptionsForm = document.getElementById('gameOptionsForm');
 const roundTime = document.getElementById('roundTime');
@@ -220,6 +224,42 @@ fill.addEventListener('click', () => {
 brush.addEventListener('click', () => {
 	changeBrushColor(brushIndicator.style.backgroundColor);
 });
+
+// for gallery
+socket.on('save', (word) => {
+	title = word;
+	if ($('#saveToGallery').length) {
+		let timeLeft = 10;
+		document.getElementById('saveImgTimer').innerHTML = timeLeft;
+		$('#saveToGallery').modal({ backdrop: 'static', keyboard: false });
+		saveTimer = window.setInterval(() => {
+			timeLeft -= 1;
+			document.getElementById('saveImgTimer').innerHTML = timeLeft;
+			if (timeLeft <= 0) {
+				window.clearInterval(saveTimer);
+				$('#saveToGallery').modal('hide');
+			}
+		}, 1000);
+	}
+});
+
+if (saveBtn !== null) {
+	saveBtn.addEventListener('click', () => {
+		$('#saveToGallery').modal('hide');
+		const image = canvas.toDataURL('image/png');
+		$.ajax({
+			type: 'POST',
+			url: '/save',
+			data: JSON.stringify({ url: image, title }),
+			contentType: 'application/json',
+			processData: false,
+		});
+	});
+
+	document.getElementById('closeBtn').addEventListener('click', () => {
+		$('#saveToGallery').modal('hide');
+	});
+}
 
 socket.on('draw', (data) => {
 	ctx.strokeStyle = data.penColor;
