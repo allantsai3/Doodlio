@@ -40,6 +40,10 @@ function changeDrawingPlayer(rooms, code, io) {
 		room.currentlyDrawingIndex = 0;
 	}
 
+	if (room.currentlyDrawing.id !== '') {
+		io.to(room.currentlyDrawing.id).emit('save', room.currentWordToDraw);
+	}
+
 	room.currentDrawingState = {};
 	room.currentlyDrawing = room.players[room.currentlyDrawingIndex];
 	room.drawnThisRound[room.currentlyDrawingIndex] = true;

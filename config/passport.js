@@ -30,11 +30,11 @@ passport.use(new GoogleStrategy(
 					if (err2) {
 						console.log(err2);
 					}
-					const newUser = { username: profile.displayName, email: profile.email };
+					const newUser = { username: profile.displayName, email: profile.email, guest: false };
 					done(null, newUser);
 				});
 			} else {
-				const user = { username: result[0].username, email: result[0].email };
+				const user = { username: result[0].username, email: result[0].email, guest: false };
 				done(null, user);
 			}
 		});
@@ -48,7 +48,7 @@ passport.use(new LocalStrategy({
 	session: true,
 	passReqToCallback: false,
 }, (username, password, done) => {
-	const guestUser = { username, email: '' };
+	const guestUser = { username, email: '', guest: true };
 	done(null, guestUser);
 }));
 
