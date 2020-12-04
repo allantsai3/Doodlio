@@ -303,7 +303,13 @@ io.on('connection', (socket) => {
 				const idIndex = rooms[code].players.map((player) => player.id).indexOf(id);
 				const currentTime = parseFloat(`${data.score}.0`);
 				const totalTime = parseFloat(`${room.turnTimer}.0`);
-				const newScore = (currentTime / totalTime).toFixed(3) * 1000;
+				let newScore = (currentTime / totalTime).toFixed(3) * 1000;
+				if (room.guessedCorrectly.length === 1) {
+					const dIndex = room.players.map((player) => player.id).indexOf(room.currentlyDrawing.id);
+					room.playerScores[dIndex] += 400;
+					io.to(room.currentlyDrawing.id).emit('updateScore', room.playerScores[dIndex]);
+					newScore += 200;
+				}
 				room.playerScores[idIndex] += newScore;
 				room.numGuessedRight += 1;
 				io.to(code).emit('chatMessage', { msg: `${user} guessed the word!`, color: 'green' });
