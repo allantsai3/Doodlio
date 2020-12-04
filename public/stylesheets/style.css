@@ -31,14 +31,23 @@ body {
 
 .game-container {
 	background-color: #d8dee9;
-	margin: 150px auto 2em;
+	margin: 100px auto 2em;
 	border-radius: 10px;
 	padding: 1em;
 	min-width: 610px;
 }
 
+.game-interface-table {
+	margin: 0 1em;
+}
+
+#interface-table {
+	width: 100%;
+}
+
 .player-list {
 	list-style: none;
+	max-height: 774px;
 	width: 250px;
 	display: block;
 	overflow-y: auto;
@@ -57,7 +66,7 @@ body {
 .game-canvas {
 	background-color: #d8dee9;
 	margin: 0 auto;
-	padding: 1em;
+	padding: 0 1em;
 }
 
 canvas {
@@ -105,6 +114,10 @@ canvas {
 	display: inline-block;
 }
 
+.progress {
+	margin: 0 1em;
+}
+
 #clear-canvas {
 	width: 50px;
 	height: 50px;
@@ -116,13 +129,16 @@ canvas {
 	position: relative;
 	height: 100%;
 	border-radius: 5px;
+	max-width: 250px;
 }
 
 .chat-messages {
 	height: calc(100% - 38px);
-	max-height: 666px;
+	max-height: 704px;
 	min-width: 250px;
+	display: block;
 	overflow-wrap: break-word;
+	word-break: break-word;
 	padding: 1em;
 }
 
@@ -138,7 +154,7 @@ canvas {
 	}
 }
 
-@media only screen and (max-width: 1200px) {
+@media (max-width: 1199px) {
 	.player-list-col {
 		display: none;
 	}
@@ -155,8 +171,9 @@ canvas {
 	}
 	.chat-messages {
 		height: calc(100% - 38px);
-		max-height: 250px;
+		max-height: 200px;
 		min-width: 250px;
 		overflow-wrap: break-word;
+		word-break: break-word;
 	}
 }
