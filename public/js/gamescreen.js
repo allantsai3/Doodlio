@@ -14,11 +14,12 @@ const chatAutoScroll = document.querySelector('.chat-messages');
 const gameOptionsForm = document.getElementById('gameOptionsForm');
 const roundTime = document.getElementById('roundTime');
 const roundNumber = document.getElementById('numberOfRounds');
+const gameDifficulty = document.getElementById('gameDifficulty');
 canvas.width = 540;
 canvas.height = 540;
 
 const inkBar = document.getElementById('ink-bar');
-const totalInk = 3000;
+let totalInk = 3000;
 let currentInk = 0;
 
 let timeInterval; // id for turn timer
@@ -46,8 +47,10 @@ const socket = io();
 $('#startGame').click((e) => {
 	const roundTimeVal = roundTime.value;
 	const roundNumberVal = roundNumber.value;
+	const gameDifficultyVal = gameDifficulty.value;
+
 	if (gameOptionsForm.checkValidity() === true) {
-		socket.emit('startGame', { roundTime: roundTimeVal, roundNumber: roundNumberVal });
+		socket.emit('startGame', { roundTime: roundTimeVal, roundNumber: roundNumberVal, gameDifficulty: gameDifficultyVal });
 		e.preventDefault();
 		e.stopPropagation();
 		$('#gameOptionsModal').modal('hide');
@@ -62,14 +65,12 @@ $('#gameOptions').click(() => {
 
 // Drawing functions
 function drawTemp(color, cap, thickness, data) {
-	ctx.beginPath();
 	ctx.strokeStyle = color;
 	ctx.lineWidth = thickness;
 	ctx.lineCap = cap;
 	ctx.moveTo(data.prevX, data.prevY);
 	ctx.lineTo(data.currX, data.currY);
 	ctx.stroke();
-	ctx.closePath();
 }
 
 function changeBrushColor(color) {
@@ -108,31 +109,9 @@ function updateInkProgress() {
 	if (percentage <= 0) {
 		percentage = 0;
 		hasInk = false;
+		drawingBool = false;
 	}
 	socket.emit('updateInk', percentage);
-}
-
-function draw() {
-	ctx.beginPath();
-	ctx.strokeStyle = penColor;
-	ctx.lineWidth = penThickness;
-	ctx.lineCap = penCap;
-	ctx.moveTo(prevX, prevY);
-	ctx.lineTo(currX, currY);
-	ctx.stroke();
-	ctx.closePath();
-
-	const data = {
-		penColor,
-		penThickness,
-		penCap,
-		prevX,
-		prevY,
-		currX,
-		currY,
-	};
-
-	socket.emit('draw', data);
 }
 
 function GetPos(type, event) {
@@ -147,14 +126,6 @@ function GetPos(type, event) {
 			drawingDotBool = true;
 
 			if (drawingDotBool) {
-				ctx.beginPath();
-				ctx.strokeStyle = penColor;
-				ctx.lineWidth = penThickness;
-				ctx.lineCap = penCap;
-				ctx.moveTo(currX, currY);
-				ctx.lineTo(currX, currY);
-				ctx.stroke();
-				ctx.closePath();
 				drawingDotBool = false;
 
 				const data = {
@@ -168,6 +139,11 @@ function GetPos(type, event) {
 				};
 
 				socket.emit('draw', data);
+
+				if (eraserBool === false) {
+					currentInk += (totalInk / 100);
+					updateInkProgress();
+				}
 			}
 		}
 		if (type === 'up' || type === 'out') {
@@ -184,7 +160,16 @@ function GetPos(type, event) {
 					currentInk = currentInk + Math.abs(currX - prevX) + Math.abs(currY - prevY);
 					updateInkProgress();
 				}
-				draw();
+				const data = {
+					penColor,
+					penThickness,
+					penCap,
+					prevX,
+					prevY,
+					currX,
+					currY,
+				};
+				socket.emit('draw', data);
 			}
 		}
 	}
@@ -237,14 +222,17 @@ brush.addEventListener('click', () => {
 });
 
 socket.on('draw', (data) => {
-	ctx.beginPath();
 	ctx.strokeStyle = data.penColor;
 	ctx.lineWidth = data.penThickness;
 	ctx.lineCap = data.penCap;
 	ctx.moveTo(data.prevX, data.prevY);
 	ctx.lineTo(data.currX, data.currY);
 	ctx.stroke();
-	ctx.closePath();
+	ctx.beginPath();
+});
+
+socket.on('beginNewPath', () => {
+	ctx.beginPath();
 });
 
 socket.on('drawArr', (dataObj) => {
@@ -286,6 +274,16 @@ socket.on('updateInk', (percentage) => {
 	inkBar.innerHTML = `${percentage}%`;
 	inkBar.style.width = `${percentage}%`;
 	inkBar.ariaValuenow = percentage;
+});
+
+socket.on('setMaxInk', (value) => {
+	if (value === 'Easy') {
+		totalInk = 6000;
+	} else if (value === 'Normal') {
+		totalInk = 3000;
+	} else {
+		totalInk = 1500;
+	}
 });
 
 socket.on('gamestate', (data) => {
@@ -346,6 +344,7 @@ function pickWord(n) {
 	currentInk = 0;
 	hasInk = true;
 	socket.emit('wordPicked', chosenWord);
+	socket.emit('beginNewPath');
 }
 
 socket.on('wordModal', (words) => {
