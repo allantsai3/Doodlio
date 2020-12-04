@@ -42,6 +42,7 @@ function changeDrawingPlayer(rooms, code, io) {
 
 	room.currentDrawingState = {};
 	room.currentlyDrawing = room.players[room.currentlyDrawingIndex];
+	room.drawnThisRound[room.currentlyDrawingIndex] = true;
 	io.to(code).emit('gamestate', { currentDrawingPlayer: room.currentlyDrawing });
 }
 
@@ -69,13 +70,34 @@ function initiateTurn(rooms, code, io, wordBank) {
 }
 
 function endTurn(timeBetweenTurns, rooms, code, io, wordBank) {
-	// eslint-disable-next-line no-param-reassign
-	rooms[code].turnStarted = false;
+	const room = rooms[code];
+	room.turnStarted = false;
 	io.to(code).emit('stopDrawing');
 	io.to(code).emit('wordPrompt', `The word was: ${rooms[code].currentWordToDraw}`);
 	io.to(code).emit('chatMessage', { msg: `Turn over! The word was '${rooms[code].currentWordToDraw}'!`, color: 'blue' });
 	io.to(code).emit('turntimer', 5);
+	// if everyone has drawn this round
+	if (rooms[code].drawnThisRound.indexOf(false) === -1) {
+		// if on last round
+		if (rooms[code].currentRound === parseInt(rooms[code].roundNumber, 10)) {
+			// eslint-disable-next-line prefer-spread
+			const highestScore = Math.max.apply(Math, rooms[code].playerScores);
+			const highestScoreIndex = rooms[code].playerScores.indexOf(highestScore);
+			const winningPlayer = rooms[code].players[highestScoreIndex].username;
+			setTimeout(() => {
+				io.to(code).emit('gameEnd', { player: winningPlayer, score: highestScore });
+			}, timeBetweenTurns);
+			return;
+		}
+
+		room.currentRound += 1;
+		for (let i = 0; i < rooms[code].playerCount; i += 1) {
+			room.drawnThisRound[i] = false;
+		}
+	}
+
 	setTimeout(() => {
+		io.to(code).emit('updateRound', rooms[code].currentRound);
 		initiateTurn(rooms, code, io, wordBank);
 	}, timeBetweenTurns);
 }
@@ -111,8 +133,10 @@ function startGame(rooms, code, io, wordBank) {
 	const room = rooms[code];
 	// Execute player change immediately
 	for (let i = 0; i < rooms[code].playerCount; i += 1) {
+		room.drawnThisRound[i] = false;
 		room.playerScores[i] = 0;
 	}
+	io.to(code).emit('updateRound', 1);
 	initiateTurn(rooms, code, io, wordBank);
 }
 
@@ -129,10 +153,12 @@ function createRoom() {
 		turnStarted: false,
 		guessedCorrectly: [],
 		playerScores: [],
+		drawnThisRound: [],
 		// stores the draw history for the current round
 		currentDrawingState: {},
 		turnTimer: 60,
-		roundNumber: 3,
+		roundNumber: 0,
+		currentRound: 1,
 	};
 	return room;
 }
@@ -149,6 +175,7 @@ function addPlayerToRoom(id, user, rooms, code) {
 	room.playerCount += 1;
 	room.players.push({ id, username: user });
 	room.playerScores.push(0);
+	room.drawnThisRound.push(false);
 	logActivity(rooms, code);
 }
 
@@ -167,7 +194,13 @@ function removePlayerFromRoom(id, rooms, code, intervalHandles, io) {
 		const index = rooms[code].players.map((player) => player.id).indexOf(id);
 		rooms[code].players.splice(index, 1);
 		rooms[code].playerScores.splice(index, 1);
-		io.to(code).emit('updatePlayer', { playerList: rooms[code].players, playerScores: rooms[code].playerScores });
+		rooms[code].drawnThisRound.splice(index, 1);
+		io.to(code).emit('updatePlayer', {
+			playerList: rooms[code].players,
+			guessedPlayerList: room.guessedCorrectly,
+			currentDrawer: rooms[code].currentlyDrawing.id,
+			playerScores: rooms[code].playerScores,
+		});
 	}
 	logActivity(rooms, code);
 }

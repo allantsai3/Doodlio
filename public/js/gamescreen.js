@@ -300,6 +300,20 @@ socket.on('gamestate', (data) => {
 	$('#currentDrawingPlayer').text(username);
 });
 
+socket.on('updateRound', (roundNum) => {
+	document.getElementById('currentRound').innerHTML = roundNum;
+});
+
+socket.on('showTotalRounds', (totRounds) => {
+	document.getElementById('totalRounds').innerHTML = totRounds;
+});
+
+socket.on('gameEnd', (data) => {
+	document.getElementById('gameWinner').innerHTML = data.player;
+	document.getElementById('winnerScore').innerHTML = data.score;
+	$('#endgameModal').modal({ backdrop: 'static', keyboard: false });
+});
+
 socket.on('wordPrompt', (word) => {
 	$('#word').text(word);
 });

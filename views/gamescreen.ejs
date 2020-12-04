@@ -23,6 +23,28 @@
 </head>
 
 <body>
+
+	<!-- Modal for game end -->
+	<div class="modal fade" id="endgameModal" role="form" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+
+			<!-- Modal content -->
+			<div class="modal-content">
+				<div class="modal-header d-block">
+					<h5 class="modal-title font-weight-bold text-center">Game over! The winner is:</h5>
+				</div>
+				<div class="modal-body d-block">
+					<div class="text-center"><span id="gameWinner">_</span>: <span id="winnerScore">0</span> points</div>
+				</div>
+				<div class="modal-footer d-block">
+					<div class="text-center"><button class ="btn btn-primary" onclick="window.location.href='/';">Exit room</button></div>
+				</div>
+			</div>
+
+
+		</div>
+	</div>
+
 	<!-- Modal for selecting words -->
 	<div class="modal fade" id="wordModal" role="form" tabindex="-1">
 		<div class="modal-dialog modal-dialog-centered">
@@ -124,6 +146,9 @@
 				</div>
 				<div class="player-score">
 					Your score: <span id="playerScore">0</span>
+				</div>
+				<div class="current-round">
+					Round: <span id="currentRound">0</span>/<span id="totalRounds">0</span>
 				</div>
 				<canvas id="canvas">
 					Your browser does not support the HTML 5 Canvas.
