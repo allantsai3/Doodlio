@@ -109,7 +109,6 @@ function updateInkProgress() {
 		percentage = 0;
 		hasInk = false;
 	}
-
 	socket.emit('updateInk', percentage);
 }
 
