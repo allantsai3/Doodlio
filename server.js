@@ -271,20 +271,24 @@ io.on('connection', (socket) => {
 		currentDrawer: rooms[code].currentlyDrawing.id,
 		playerScores: rooms[code].playerScores,
 	});
+	io.to(code).emit('setMaxInk', rooms[code].roomGameDifficulty);
 
 	socket.on('startGame', (options) => {
 		const {
 			roundTime,
 			roundNumber,
+			gameDifficulty,
 		} = options;
 
 		if (rooms[code].started === false) {
 			rooms[code].started = true;
 			rooms[code].turnTimer = roundTime || 60;
 			rooms[code].roundNumber = roundNumber || 3;
+			rooms[code].roomGameDifficulty = gameDifficulty || 'Easy';
 			io.to(code).emit('showTotalRounds', rooms[code].roundNumber);
 			helpers.startGame(rooms, code, io, wordBank);
 		}
+		io.to(code).emit('setMaxInk', rooms[code].roomGameDifficulty);
 	});
 
 	// listen for chatMessage
@@ -310,6 +314,7 @@ io.on('connection', (socket) => {
 					currentDrawer: rooms[code].currentlyDrawing.id,
 					playerScores: rooms[code].playerScores,
 				});
+
 				if (room.numGuessedRight === room.playerCount - 1) {
 					// TODO: Write that everyone guessed the word
 					io.to(code).emit('chatMessage', { msg: 'Everyone has guessed the word!', color: 'blue' });
@@ -334,6 +339,10 @@ io.on('connection', (socket) => {
 			io.to(code).emit('draw', data);
 			helpers.storeData(data, rooms, code);
 		}
+	});
+
+	socket.on('beginNewPath', () => {
+		io.to(code).emit('beginNewPath');
 	});
 
 	socket.on('clear', () => {

@@ -149,6 +149,7 @@ function createRoom() {
 		started: false,
 		players: [],
 		playerCount: 0,
+		roomGameDifficulty: 'Easy',
 		// Contains the player object which is currently drawing
 		currentlyDrawing: {},
 		currentlyDrawingIndex: -1,
@@ -204,6 +205,7 @@ function removePlayerFromRoom(id, rooms, code, intervalHandles, io) {
 			guessedPlayerList: room.guessedCorrectly,
 			currentDrawer: rooms[code].currentlyDrawing.id,
 			playerScores: rooms[code].playerScores,
+			roomGameDifficulty: rooms[code].roomGameDifficulty,
 		});
 	}
 	logActivity(rooms, code);
