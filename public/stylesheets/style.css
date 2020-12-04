@@ -134,7 +134,7 @@ canvas {
 
 .chat-messages {
 	height: calc(100% - 38px);
-	max-height: 704px;
+	max-height: 712px;
 	min-width: 250px;
 	display: block;
 	overflow-wrap: break-word;
@@ -177,13 +177,3 @@ canvas {
 		word-break: break-word;
 	}
 }
-/* .panel, .flip {
-  padding: 5px;
-  border: solid 1px black;
-	border-radius: 5px;
-}
-
-.panel {
-  padding: 10px;
-  display: none;
-} */
