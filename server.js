@@ -192,6 +192,7 @@ io.on('connection', (socket) => {
 	console.log(`socket id: ${id}, joining room with code: ${code}`);
 	socket.join(code);
 	helpers.addPlayerToRoom(id, user, rooms, code);
+	io.to(id).emit('showTotalRounds', rooms[code].roundNumber);
 
 	// Update joining player with current game progress
 	socket.emit('drawArr', rooms[code].currentDrawingState);
@@ -215,6 +216,7 @@ io.on('connection', (socket) => {
 			rooms[code].started = true;
 			rooms[code].turnTimer = roundTime || 60;
 			rooms[code].roundNumber = roundNumber || 3;
+			io.to(code).emit('showTotalRounds', rooms[code].roundNumber);
 			helpers.startGame(rooms, code, io, wordBank);
 		}
 	});
