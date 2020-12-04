@@ -90,11 +90,11 @@
 								<% if(locals.code) { %>
 									<input type="text" class="form-control"
 										id="code" name="code"
-										aria-describedby="Room Code"  value="<%=code%>" />
+										aria-describedby="Room Code" maxlength="4" value="<%=code%>" />
 								<% } else { %>
 									<input type="text" class="form-control"
 										id="code" name="code"
-										aria-describedby="Room Code" />
+										aria-describedby="Room Code" maxlength="4" />
 								<% } %>
 							</div>
 							<% if(!user){ %>
