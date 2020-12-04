@@ -21,6 +21,10 @@ const roundNumber = document.getElementById('numberOfRounds');
 canvas.width = 540;
 canvas.height = 540;
 
+const inkBar = document.getElementById('ink-bar');
+const totalInk = 3000;
+let currentInk = 0;
+
 let timeInterval; // id for turn timer
 let pickTimer; // id for timer for picking a word
 
@@ -32,6 +36,13 @@ let currX = 0;
 let currY = 0;
 
 let canDraw = false;
+let hasInk = true;
+let eraserBool = false;
+
+const pencilImg = document.createElement('img');
+pencilImg.src = 'img/pencil.png';
+pencilImg.width = 20;
+pencilImg.height = 20;
 
 // eslint-disable-next-line no-undef
 const socket = io();
@@ -65,9 +76,16 @@ function drawTemp(color, cap, thickness, data) {
 	ctx.closePath();
 }
 
-function changeBrushColor(color, eraserBool) {
+function changeBrushColor(color) {
 	if (canDraw) {
+		if (color === '#d8dee9') {
+			eraserBool = true;
+		} else {
+			eraserBool = false;
+		}
+
 		penColor = color;
+
 		if (!eraserBool) {
 			brushIndicator.style.backgroundColor = color;
 		}
@@ -86,6 +104,16 @@ function changeBrushSize(thickness) {
 			penThickness = 35;
 		}
 	}
+}
+
+function updateInkProgress() {
+	let percentage = 100 - Math.round((currentInk / totalInk) * 100);
+
+	if (percentage <= 0) {
+		percentage = 0;
+		hasInk = false;
+	}
+	socket.emit('updateInk', percentage);
 }
 
 function draw() {
@@ -112,7 +140,7 @@ function draw() {
 }
 
 function GetPos(type, event) {
-	if (canDraw) {
+	if (canDraw && hasInk) {
 		if (type === 'down') {
 			prevX = currX;
 			prevY = currY;
@@ -155,6 +183,11 @@ function GetPos(type, event) {
 				prevY = currY;
 				currX = event.pageX - canvas.offsetLeft;
 				currY = event.pageY - canvas.offsetTop;
+
+				if (eraserBool === false) {
+					currentInk = currentInk + Math.abs(currX - prevX) + Math.abs(currY - prevY);
+					updateInkProgress();
+				}
 				draw();
 			}
 		}
@@ -189,7 +222,7 @@ canvas.addEventListener('mouseout', (event) => {
 	GetPos('out', event);
 });
 brushColors.forEach((el) => el.addEventListener('click', (event) => {
-	changeBrushColor(event.target.id, false);
+	changeBrushColor(event.target.id);
 }));
 brushSizes.forEach((el) => el.addEventListener('click', (event) => {
 	changeBrushSize(event.target.id);
@@ -198,13 +231,13 @@ clear.addEventListener('click', () => {
 	clearBoard();
 });
 eraser.addEventListener('click', () => {
-	changeBrushColor('#d8dee9', true);
+	changeBrushColor('#d8dee9');
 });
 fill.addEventListener('click', () => {
 	fillBoard();
 });
 brush.addEventListener('click', () => {
-	changeBrushColor(brushIndicator.style.backgroundColor, false);
+	changeBrushColor(brushIndicator.style.backgroundColor);
 });
 
 // for gallery
@@ -289,6 +322,12 @@ socket.on('fill', (color) => {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 });
 
+socket.on('updateInk', (percentage) => {
+	inkBar.innerHTML = `${percentage}%`;
+	inkBar.style.width = `${percentage}%`;
+	inkBar.ariaValuenow = percentage;
+});
+
 socket.on('gamestate', (data) => {
 	const {
 		currentDrawingPlayer: {
@@ -300,15 +339,33 @@ socket.on('gamestate', (data) => {
 	$('#currentDrawingPlayer').text(username);
 });
 
+socket.on('updateRound', (roundNum) => {
+	document.getElementById('currentRound').innerHTML = roundNum;
+});
+
+socket.on('showTotalRounds', (totRounds) => {
+	document.getElementById('totalRounds').innerHTML = totRounds;
+});
+
+socket.on('gameEnd', (data) => {
+	document.getElementById('gameWinner').innerHTML = data.player;
+	document.getElementById('winnerScore').innerHTML = data.score;
+	$('#endgameModal').modal({ backdrop: 'static', keyboard: false });
+});
+
 socket.on('wordPrompt', (word) => {
 	$('#word').text(word);
+});
+
+socket.on('stopDrawing', () => {
+	canDraw = false;
 });
 
 socket.on('turntimer', (time) => {
 	if (timeInterval != null) {
 		window.clearInterval(timeInterval);
-		socket.emit('clear');
 	}
+
 	document.getElementById('gameTimer').innerHTML = time;
 	timeInterval = window.setInterval(() => {
 		let timeLeft = parseInt(document.getElementById('gameTimer').innerHTML, 10);
@@ -325,6 +382,9 @@ function pickWord(n) {
 	}
 	const chosenWord = document.getElementById(`word${n}`).innerHTML;
 	$('#wordModal').modal('hide');
+	socket.emit('updateInk', 100);
+	currentInk = 0;
+	hasInk = true;
 	socket.emit('wordPicked', chosenWord);
 }
 
@@ -351,33 +411,47 @@ $('#chat-form').submit((e) => {
 	}
 	// Prevent page from reloading
 	e.preventDefault();
+	let playerScore = document.getElementById('gameTimer').innerHTML;
+	if (playerScore == null) playerScore = 0;
 	// Emit message to server
-	socket.emit('chatMessage', $('#chat-input').val());
+	socket.emit('messageTyped', { msg: $('#chat-input').val(), score: playerScore });
 	// Reset input field
 	$('#chat-form')[0].reset();
 	return false;
 });
 
+socket.on('updateScore', (score) => {
+	document.getElementById('playerScore').innerHTML = score;
+});
+
 // Update Chat DOM
-socket.on('chatMessage', (msg) => {
-	$('#messages').append($('<li>').text(msg));
-	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
-});
+socket.on('chatMessage', (msgObj) => {
+	const {
+		msg = '',
+		color = 'black',
+	} = msgObj;
 
-socket.on('serverMessage', (msg) => {
-	$('#messages').append($('<li>').text(`${msg}`).css('color', 'grey'));
-	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
-});
-
-socket.on('playerDisconnect', (msg) => {
-	$('#messages').append($('<li>').text(`${msg}`).css('color', 'red'));
+	$('#messages').append($('<li>').text(`${msg}`).css('color', color));
 	chatAutoScroll.scrollTop = chatAutoScroll.scrollHeight;
 });
 
 // Update Player List DOM of individual room
-socket.on('updatePlayer', (playerList) => {
+socket.on('updatePlayer', (data) => {
+	const {
+		playerList,
+		playerScores,
+		guessedPlayerList,
+		currentDrawer,
+	} = data;
+
 	$('#playerList').text('');
-	playerList.forEach((user) => {
-		$('#playerList').append($('<li>').text(`${user}`));
+	let i = 0;
+	playerList.forEach((player) => {
+		const listElement = $(`<li ${guessedPlayerList.includes(player.id) ? 'style="background-color: #86eb34;"' : ''}>`).text(`${player.username}: ${playerScores[i]}`);
+		if (currentDrawer === player.id) {
+			listElement.append(pencilImg);
+		}
+		$('#playerList').append(listElement);
+		i += 1;
 	});
 });

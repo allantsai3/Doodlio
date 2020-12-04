@@ -245,7 +245,7 @@ const io = socketio(server);
 // Listen on connection event for incoming sockets
 io.on('connection', (socket) => {
 	console.log('a user connected');
-	socket.emit('serverMessage', 'Welcome to Doodl.io!');
+	socket.emit('chatMessage', { msg: 'Welcome to Doodl.io!', color: 'grey' });
 
 	const { id, handshake: { headers: { cookie = '' } = {} } = {} } = socket;
 
@@ -258,13 +258,19 @@ io.on('connection', (socket) => {
 	console.log(`socket id: ${id}, joining room with code: ${code}`);
 	socket.join(code);
 	helpers.addPlayerToRoom(id, user, rooms, code);
+	io.to(id).emit('showTotalRounds', rooms[code].roundNumber);
 
 	// Update joining player with current game progress
 	socket.emit('drawArr', rooms[code].currentDrawingState);
 
 	// Broadcast when a user connects, update player list
-	io.to(code).emit('serverMessage', `${user} has joined the room`);
-	io.to(code).emit('updatePlayer', rooms[code].players.map((player) => player.username));
+	io.to(code).emit('chatMessage', `${user} has joined the room`);
+	io.to(code).emit('updatePlayer', {
+		playerList: rooms[code].players,
+		guessedPlayerList: rooms[code].guessedCorrectly,
+		currentDrawer: rooms[code].currentlyDrawing.id,
+		playerScores: rooms[code].playerScores,
+	});
 
 	socket.on('startGame', (options) => {
 		const {
@@ -276,14 +282,44 @@ io.on('connection', (socket) => {
 			rooms[code].started = true;
 			rooms[code].turnTimer = roundTime || 60;
 			rooms[code].roundNumber = roundNumber || 3;
+			io.to(code).emit('showTotalRounds', rooms[code].roundNumber);
 			helpers.startGame(rooms, code, io, wordBank);
 		}
 	});
 
 	// listen for chatMessage
-	socket.on('chatMessage', (msg) => {
-		// emit back to clients in same room, replace id with Nickname later
-		io.to(code).emit('chatMessage', `${user}: ${msg}`);
+	socket.on('messageTyped', (data) => {
+		const room = rooms[code];
+		if (rooms[code].started === false) {
+			io.to(code).emit('chatMessage', { msg: `${user}: ${data.msg}` });
+		} else if (id !== room.currentlyDrawing.id
+			&& !room.guessedCorrectly.includes(id) && room.turnStarted) {
+			if (data.msg === room.currentWordToDraw) {
+				room.guessedCorrectly.push(id);
+				const idIndex = rooms[code].players.map((player) => player.id).indexOf(id);
+				const currentTime = parseFloat(`${data.score}.0`);
+				const totalTime = parseFloat(`${room.turnTimer}.0`);
+				const newScore = (currentTime / totalTime).toFixed(3) * 1000;
+				room.playerScores[idIndex] += newScore;
+				room.numGuessedRight += 1;
+				io.to(code).emit('chatMessage', { msg: `${user} guessed the word!`, color: 'green' });
+				io.to(id).emit('updateScore', room.playerScores[rooms[code].players.map((player) => player.id).indexOf(id)]); // used to show each player's own score to them, might not be needed
+				io.to(code).emit('updatePlayer', {
+					playerList: rooms[code].players,
+					guessedPlayerList: room.guessedCorrectly,
+					currentDrawer: rooms[code].currentlyDrawing.id,
+					playerScores: rooms[code].playerScores,
+				});
+				if (room.numGuessedRight === room.playerCount - 1) {
+					// TODO: Write that everyone guessed the word
+					io.to(code).emit('chatMessage', { msg: 'Everyone has guessed the word!', color: 'blue' });
+					clearInterval(intervalHandles[code]);
+					helpers.endTurn(5000, rooms, code, io, wordBank);
+				}
+			} else {
+				io.to(code).emit('chatMessage', { msg: `${user}: ${data.msg}` });
+			}
+		}
 	});
 
 	socket.on('draw', (data) => {
@@ -312,18 +348,23 @@ io.on('connection', (socket) => {
 		room.currentDrawingState = { fill: color };
 	});
 
+	socket.on('updateInk', (percentage) => {
+		io.to(code).emit('updateInk', percentage);
+	});
+
 	// Once the drawer picks a word, start the turn
 	socket.on('wordPicked', (word) => {
 		const {
 			turnTimer,
 		} = rooms[code];
 		rooms[code].currentWordToDraw = word;
+		io.to(code).emit('clear');
 		intervalHandles[code] = helpers.startTurn(turnTimer * 1000, rooms, code, io, wordBank);
 	});
 
 	socket.on('disconnect', () => {
 		console.log('user disconnected');
-		io.to(code).emit('playerDisconnect', `${user} has left the room`);
+		io.to(code).emit('chatMessage', { msg: `${user} has left the room`, color: 'red' });
 		helpers.removePlayerFromRoom(id, rooms, code, intervalHandles, io);
 	});
 });
