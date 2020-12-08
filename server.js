@@ -264,7 +264,7 @@ io.on('connection', (socket) => {
 	socket.emit('drawArr', rooms[code].currentDrawingState);
 
 	// Broadcast when a user connects, update player list
-	io.to(code).emit('chatMessage', `${user} has joined the room`);
+	io.to(code).emit('chatMessage', { msg: `${user} has joined the room`, color: 'grey' });
 	io.to(code).emit('updatePlayer', {
 		playerList: rooms[code].players,
 		guessedPlayerList: rooms[code].guessedCorrectly,
