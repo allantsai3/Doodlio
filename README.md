@@ -2,15 +2,12 @@
 
 This project is based on a GitLab [Project Template](https://docs.gitlab.com/ee/gitlab-basics/create-project.html).
 
-Improvements can be proposed in the [original project](https://gitlab.com/gitlab-org/project-templates/express).
+## Showcase
+Game lobby with two connected hosts
+![image](https://user-images.githubusercontent.com/31875809/112943049-d3304a80-90e5-11eb-97cb-792b735195e8.png)
 
-### CI/CD with Auto DevOps
 
-This template is compatible with [Auto DevOps](https://docs.gitlab.com/ee/topics/autodevops/).
-
-If Auto DevOps is not already enabled for this project, you can [turn it on](https://docs.gitlab.com/ee/topics/autodevops/#enabling-auto-devops) in the project settings.
-
-## Usage
+## Development
 
 # First time setup
 Make sure yarn is installed on your system through the following:
